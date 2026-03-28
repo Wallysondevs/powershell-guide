@@ -1,0 +1,14 @@
+packages:
+  "framer-motion": "For smooth page transitions and interactive element animations"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to safely merge Tailwind CSS classes"
+  "lucide-react": "Beautiful, consistent icons for the UI"
+
+images:
+  - path: "artifacts/powershell-guide/public/images/ps-hero.png"
+    description: "A dark, abstract, high-tech terminal background with deep blue and neon purple glowing accents, subtle grid lines, modern tech aesthetic"
+    aspect_ratio: "16:9"
+
+notes:
+  - "The application is entirely static and runs on the frontend."
+  - "Data is stored locally in the src/data directory."
