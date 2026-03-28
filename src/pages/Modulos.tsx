@@ -188,7 +188,7 @@ function prompt {
     $hora  = Get-Date -Format "HH:mm"
     $branch = git branch --show-current 2>$null
     $gitInfo = if ($branch) { " ($branch)" } else { "" }
-    "`e[32m[$hora]`e[0m `e[36m$local`e[33m$gitInfo`e[0m PS> "
+    "\`e[32m[$hora]\`e[0m \`e[36m$local\`e[33m$gitInfo\`e[0m PS> "
 }`}
       />
 
