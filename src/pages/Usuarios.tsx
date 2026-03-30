@@ -43,11 +43,7 @@ Get-LocalUser | Where-Object Enabled -eq $true
 $password = Read-Host "Digite a senha do novo usuário" -AsSecureString
 
 # Criar o usuário
-New-LocalUser -Name "DevUser" \`
-             -Password $password \`
-             -FullName "Desenvolvedor de Teste" \`
-             -Description "Conta usada para testes de ambiente" \`
-             -PasswordNeverExpires
+New-LocalUser -Name "DevUser"  -Password $password  -FullName "Desenvolvedor de Teste"  -Description "Conta usada para testes de ambiente"  -PasswordNeverExpires
 
 # Ativar o usuário (caso venha desativado por padrão)
 Enable-LocalUser -Name "DevUser"

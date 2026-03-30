@@ -104,11 +104,7 @@ Set-Service -Name "MeuServico" -Description "Este é o meu serviço personalizad
       <CodeBlock
         title="Gerenciamento avançado"
         code={`# Criar um novo serviço
-New-Service -Name "MeuAppService" \`
-            -BinaryPathName "C:\\Apps\\MeuApp.exe" \`
-            -DisplayName "Meu Aplicativo Personalizado" \`
-            -Description "Serviço que roda meu app de monitoramento" \`
-            -StartupType Manual
+New-Service -Name "MeuAppService"  -BinaryPathName "C:\\Apps\\MeuApp.exe"  -DisplayName "Meu Aplicativo Personalizado"  -Description "Serviço que roda meu app de monitoramento"  -StartupType Manual
 
 # Remover um serviço (PowerShell 6+ ou Windows PowerShell via sc.exe)
 # No Windows PowerShell 5.1, use:

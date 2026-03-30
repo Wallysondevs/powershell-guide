@@ -41,8 +41,7 @@ Get-ScheduledTask -TaskName "MinhaTarefa" | Get-ScheduledTaskInfo
         title="Criando uma tarefa passo a passo"
         code={`# 1. Definir a Ação (O que a tarefa vai fazer)
 # Nota: Sempre chame o powershell.exe com -File ou -Command
-$action = New-ScheduledTaskAction -Execute "powershell.exe" \`
-                                  -Argument "-NoProfile -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1"
+$action = New-ScheduledTaskAction -Execute "powershell.exe"  -Argument "-NoProfile -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1"
 
 # 2. Definir o Gatilho (Quando a tarefa vai rodar - ex: diariamente às 3 da manhã)
 $trigger = New-ScheduledTaskTrigger -Daily -At 3am
@@ -51,12 +50,7 @@ $trigger = New-ScheduledTaskTrigger -Daily -At 3am
 $settings = New-ScheduledTaskSettings -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
 # 4. Registrar a Tarefa no sistema
-Register-ScheduledTask -TaskName "MeuBackupDiario" \`
-                       -Action $action \`
-                       -Trigger $trigger \`
-                       -Settings $settings \`
-                       -User "SYSTEM" \`
-                       -RunLevel Highest
+Register-ScheduledTask -TaskName "MeuBackupDiario"  -Action $action  -Trigger $trigger  -Settings $settings  -User "SYSTEM"  -RunLevel Highest
 `}
       />
 

@@ -4,7 +4,10 @@ import {
   BookOpen, Terminal, HardDrive, Shield, Settings,
   FileText, Users, Network, Cpu, Clock, History,
   X, Package, Code, Layers, Filter, Database,
-  FolderOpen, Key, Globe, Zap, Wrench, ChevronRight, Box, ToggleLeft
+  FolderOpen, Key, Globe, Zap, Wrench, ChevronRight,
+  Box, ToggleLeft, Lock, Cloud, Bug, TestTube,
+  GitBranch, Monitor, Archive, Server, Mail,
+  Activity, Workflow, Search, Star, List
 } from "lucide-react";
 
 const NAVIGATION = [
@@ -25,13 +28,15 @@ const NAVIGATION = [
       { path: "/variaveis", label: "Variáveis e Tipos", icon: Database },
       { path: "/operadores", label: "Operadores", icon: Code },
       { path: "/strings", label: "Strings e Texto", icon: FileText },
+      { path: "/data-hora", label: "Data e Hora", icon: Clock },
     ]
   },
   {
     title: "Coleções de Dados",
     items: [
       { path: "/arrays", label: "Arrays e Listas", icon: Layers },
-      { path: "/hashtables", label: "Hashtables e Objetos", icon: Box },
+      { path: "/hashtables", label: "Hashtables", icon: Box },
+      { path: "/objetos", label: "Objetos Personalizados", icon: Box },
     ]
   },
   {
@@ -40,6 +45,7 @@ const NAVIGATION = [
       { path: "/pipeline", label: "Pipeline (|)", icon: Filter },
       { path: "/filtros", label: "Filtros e Seleção", icon: Filter },
       { path: "/formatacao", label: "Formatação e Exportação", icon: FileText },
+      { path: "/regex", label: "Expressões Regulares", icon: Search },
     ]
   },
   {
@@ -49,6 +55,7 @@ const NAVIGATION = [
       { path: "/arquivos", label: "Manipulação de Arquivos", icon: FileText },
       { path: "/conteudo-arquivos", label: "Conteúdo de Arquivos", icon: FileText },
       { path: "/permissoes", label: "Permissões e ACLs", icon: Shield },
+      { path: "/compressao", label: "Compressão e ZIP", icon: Archive },
     ]
   },
   {
@@ -58,38 +65,96 @@ const NAVIGATION = [
       { path: "/servicos", label: "Serviços", icon: Settings },
       { path: "/usuarios", label: "Usuários e Grupos", icon: Users },
       { path: "/agendamento", label: "Agendamento de Tarefas", icon: Clock },
+      { path: "/evento-log", label: "Event Log", icon: Activity },
+      { path: "/registro", label: "Registro do Windows", icon: Key },
+      { path: "/wmi-cim", label: "WMI e CIM", icon: Cpu },
     ]
   },
   {
     title: "Rede e Internet",
     items: [
       { path: "/rede", label: "Rede e Conectividade", icon: Network },
+      { path: "/network-avancado", label: "Rede Avançada", icon: Network },
       { path: "/web-api", label: "Web e APIs REST", icon: Globe },
+      { path: "/email", label: "Envio de E-mails", icon: Mail },
     ]
   },
   {
     title: "Scripting Avançado",
     items: [
       { path: "/fluxo-controle", label: "Controle de Fluxo", icon: Code },
+      { path: "/loops", label: "Loops Avançados", icon: List },
       { path: "/funcoes", label: "Funções e Parâmetros", icon: Zap },
-      { path: "/erros", label: "Tratamento de Erros", icon: Shield },
-      { path: "/modulos", label: "Módulos e Perfil", icon: Package },
       { path: "/scripts", label: "Scripts .ps1", icon: Terminal },
+      { path: "/erros", label: "Tratamento de Erros", icon: Shield },
+      { path: "/classes", label: "Classes e OOP", icon: Box },
+      { path: "/performance", label: "Otimização de Performance", icon: Activity },
     ]
   },
   {
-    title: "Windows Avançado",
+    title: "Formatos de Dados",
     items: [
-      { path: "/registro", label: "Registro do Windows", icon: Key },
-      { path: "/wmi-cim", label: "WMI e CIM", icon: Cpu },
+      { path: "/json", label: "JSON", icon: Code },
+      { path: "/xml", label: "XML", icon: Code },
+      { path: "/csv", label: "CSV e Excel", icon: FileText },
     ]
   },
   {
-    title: "Extras",
+    title: "Segurança",
     items: [
+      { path: "/seguranca", label: "Segurança e Políticas", icon: Shield },
+      { path: "/criptografia", label: "Criptografia", icon: Lock },
+      { path: "/bitlocker", label: "BitLocker", icon: Lock },
+    ]
+  },
+  {
+    title: "Módulos e Pacotes",
+    items: [
+      { path: "/modulos", label: "Módulos e Perfil", icon: Package },
       { path: "/pacotes", label: "Gerenciadores de Pacotes", icon: Package },
+      { path: "/ps-gallery", label: "PowerShell Gallery", icon: Star },
+    ]
+  },
+  {
+    title: "Execução Remota e Paralela",
+    items: [
+      { path: "/remoting", label: "PowerShell Remoting", icon: Server },
+      { path: "/jobs", label: "Jobs e Paralelismo", icon: Workflow },
+    ]
+  },
+  {
+    title: "Ferramentas Corporativas",
+    items: [
+      { path: "/active-directory", label: "Active Directory", icon: Users },
+      { path: "/gpo", label: "Group Policy (GPO)", icon: Settings },
+      { path: "/hyper-v", label: "Hyper-V", icon: Monitor },
+      { path: "/sql", label: "SQL Server", icon: Database },
+      { path: "/azure", label: "Azure PowerShell", icon: Cloud },
+      { path: "/dsc", label: "Desired State Config", icon: Workflow },
+    ]
+  },
+  {
+    title: "Qualidade e CI/CD",
+    items: [
+      { path: "/debug", label: "Depuração", icon: Bug },
+      { path: "/pester", label: "Testes com Pester", icon: TestTube },
+      { path: "/cicd", label: "CI/CD e Automação", icon: GitBranch },
+    ]
+  },
+  {
+    title: "PowerShell Moderno",
+    items: [
+      { path: "/ps7", label: "PowerShell 7 — Novidades", icon: Zap },
+      { path: "/wpf", label: "GUIs com WPF/WinForms", icon: Monitor },
+      { path: "/perfil", label: "Perfil e Customização", icon: Settings },
+    ]
+  },
+  {
+    title: "Referências",
+    items: [
       { path: "/dicas", label: "Dicas e Truques", icon: Wrench },
-      { path: "/referencias", label: "Referências", icon: BookOpen },
+      { path: "/ref-rapida", label: "Referência Rápida", icon: FileText },
+      { path: "/referencias", label: "Links e Recursos", icon: BookOpen },
     ]
   }
 ];

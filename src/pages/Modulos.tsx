@@ -121,17 +121,7 @@ Export-ModuleMember -Function $Public.BaseName -Alias *`}
         title="Gerando o manifesto do módulo (MeuModulo.psd1)"
         language="powershell"
         code={`# Criar um manifesto profissional automaticamente
-New-ModuleManifest -Path ".\\MeuModulo\\MeuModulo.psd1" \`
-    -RootModule "MeuModulo.psm1" \`
-    -ModuleVersion "1.2.0" \`
-    -Author "Seu Nome" \`
-    -CompanyName "Empresa Ltda" \`
-    -Description "Automações internas de TI para Windows Server" \`
-    -PowerShellVersion "5.1" \`
-    -RequiredModules @("ActiveDirectory") \`
-    -FunctionsToExport @("Get-Relatorio", "Send-AlertaEmail") \`
-    -Tags @("Windows", "ActiveDirectory", "Automacao") \`
-    -ProjectUri "https://github.com/empresa/MeuModulo"
+New-ModuleManifest -Path ".\\MeuModulo\\MeuModulo.psd1"  -RootModule "MeuModulo.psm1"  -ModuleVersion "1.2.0"  -Author "Seu Nome"  -CompanyName "Empresa Ltda"  -Description "Automações internas de TI para Windows Server"  -PowerShellVersion "5.1"  -RequiredModules @("ActiveDirectory")  -FunctionsToExport @("Get-Relatorio", "Send-AlertaEmail")  -Tags @("Windows", "ActiveDirectory", "Automacao")  -ProjectUri "https://github.com/empresa/MeuModulo"
 
 # Publicar na Gallery (requer conta na PowerShell Gallery)
 Publish-Module -Path ".\\MeuModulo" -NuGetApiKey "sua_api_key"`}
@@ -202,10 +192,7 @@ function prompt {
         title="Gerenciando repositórios internos"
         language="powershell"
         code={`# Registrar um repositório de rede interna da empresa
-Register-PSRepository -Name "InternalRepo" \`
-    -SourceLocation "\\\\servidor\\PSGallery" \`
-    -PublishLocation "\\\\servidor\\PSGallery\\publish" \`
-    -InstallationPolicy Trusted
+Register-PSRepository -Name "InternalRepo"  -SourceLocation "\\\\servidor\\PSGallery"  -PublishLocation "\\\\servidor\\PSGallery\\publish"  -InstallationPolicy Trusted
 
 # Listar repositórios disponíveis
 Get-PSRepository

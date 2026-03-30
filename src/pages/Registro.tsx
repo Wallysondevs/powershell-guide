@@ -46,7 +46,7 @@ Get-PSDrive | Where-Object Provider -like "*Registry*"
 
 # Mapear HKEY_CLASSES_ROOT como drive acessível
 New-PSDrive -Name HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-# Agora: cd HKCR:\\`}
+# Agora: cd HKCR:`}
       />
 
       <h2>Lendo Valores do Registro</h2>
@@ -94,14 +94,10 @@ New-Item -Path "HKCU:\\Software\\ScriptBrasil" -Force
 New-Item -Path "HKCU:\\Software\\ScriptBrasil\\Configuracoes" -Force
 
 # 3. Adicionar valores com diferentes tipos de dados
-New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil" \`
-    -Name "Versao" -Value "2.5.0" -PropertyType String    -Force
-New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil" \`
-    -Name "Ativo"  -Value 1       -PropertyType DWord     -Force
-New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil" \`
-    -Name "GUID"   -Value "{A1B2-C3D4}" -PropertyType String -Force
-New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil" \`
-    -Name "Servidores" -Value @("SRV01","SRV02") -PropertyType MultiString -Force
+New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil"  -Name "Versao" -Value "2.5.0" -PropertyType String    -Force
+New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil"  -Name "Ativo"  -Value 1       -PropertyType DWord     -Force
+New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil"  -Name "GUID"   -Value "{A1B2-C3D4}" -PropertyType String -Force
+New-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil"  -Name "Servidores" -Value @("SRV01","SRV02") -PropertyType MultiString -Force
 
 # 4. Alterar o valor de uma propriedade existente
 Set-ItemProperty -Path "HKCU:\\Software\\ScriptBrasil" -Name "Versao" -Value "2.6.0"
@@ -158,18 +154,14 @@ if (!(Test-Path $path)) { New-Item $path -Force }
 Set-ItemProperty -Path $path -Name "DisableSearchBoxSuggestions" -Value 1 -Type DWord
 
 # Habilitar modo escuro no sistema e nos aplicativos
-Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" \`
-    -Name "AppsUseLightTheme"   -Value 0 -Type DWord  # 0 = escuro, 1 = claro
-Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" \`
-    -Name "SystemUsesLightTheme" -Value 0 -Type DWord
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"  -Name "AppsUseLightTheme"   -Value 0 -Type DWord  # 0 = escuro, 1 = claro
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"  -Name "SystemUsesLightTheme" -Value 0 -Type DWord
 
 # Desativar animações para melhorar performance
-Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects" \`
-    -Name "VisualFXSetting" -Value 2 -Type DWord  # 2 = melhor desempenho
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects"  -Name "VisualFXSetting" -Value 2 -Type DWord  # 2 = melhor desempenho
 
 # Configurar extensões de arquivo visíveis no Explorer
-Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced" \`
-    -Name "HideFileExt" -Value 0 -Type DWord  # 0 = mostrar extensões
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"  -Name "HideFileExt" -Value 0 -Type DWord  # 0 = mostrar extensões
 
 # Ler a chave de produto do Windows (útil para auditoria)
 $key = (Get-ItemProperty "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion").ProductId
