@@ -1,139 +1,199 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Agendamento() {
-  return (
-    <PageContainer
-      title="Agendamento de Tarefas"
-      subtitle="Automatize a execução de seus scripts e programas usando o Agendador de Tarefas do Windows."
-      difficulty="avancado"
-      timeToRead="22 min"
-    >
-      <p>
-        O Agendamento de Tarefas (Task Scheduler) permite que você execute scripts do PowerShell automaticamente em horários específicos, quando o sistema inicia ou quando certos eventos ocorrem. O módulo <code>ScheduledTasks</code> fornece uma interface poderosa para criar e gerenciar essas tarefas programadas sem precisar abrir a interface gráfica.
-      </p>
+  export default function Agendamento() {
+    return (
+      <PageContainer
+        title="Agendamento de Tarefas"
+        subtitle="Automatize a execução de scripts e programas com o Agendador de Tarefas do Windows."
+        difficulty="avancado"
+        timeToRead="30 min"
+      >
+        <p>
+          O Agendamento de Tarefas (Task Scheduler) permite que scripts do PowerShell sejam
+          executados automaticamente em horários específicos, na inicialização do sistema,
+          em eventos ou quando certas condições são atendidas — tudo via PowerShell,
+          sem precisar abrir a interface gráfica.
+        </p>
 
-      <h2>1. Visualizando Tarefas Existentes</h2>
-      <p>
-        Podemos listar as tarefas agendadas no sistema para verificar seu status e última execução.
-      </p>
+        <h2>Visualizando Tarefas Existentes</h2>
+        <CodeBlock title="Consultando tarefas agendadas" code={`# Listar todas as tarefas
+  Get-ScheduledTask | Format-Table TaskName, TaskPath, State -AutoSize
 
-      <CodeBlock
-        title="Consultando tarefas"
-        code={`# Listar todas as tarefas (pode demorar devido à quantidade)
-Get-ScheduledTask
+  # Tarefas em um caminho específico
+  Get-ScheduledTask -TaskPath "\\Microsoft\\Windows\\UpdateOrchestrator\"
 
-# Buscar tarefas em uma pasta específica
-Get-ScheduledTask -TaskPath "\\Microsoft\\Windows\\UpdateOrchestrator\\"
+  # Detalhes e última execução
+  Get-ScheduledTask -TaskName "MinhaTarefa" | Get-ScheduledTaskInfo
 
-# Ver o estado e o resultado da última execução de uma tarefa
-Get-ScheduledTask -TaskName "MinhaTarefa" | Get-ScheduledTaskInfo
-`}
-      />
+  # Tarefas prontas mas nunca executadas
+  Get-ScheduledTask | Get-ScheduledTaskInfo |
+      Where-Object { $_.LastRunTime -lt "01/01/2000" } |
+      Select-Object TaskName, LastRunTime, NextRunTime
 
-      <h2>2. O Processo de Criação de uma Tarefa</h2>
-      <p>
-        Para criar uma tarefa via PowerShell, seguimos um padrão de 4 passos, definindo separadamente: a <b>Ação</b>, o <b>Gatilho</b>, as <b>Configurações</b> e a <b>Identidade</b>.
-      </p>
+  # Exportar todas as tarefas para relatório
+  Get-ScheduledTask | ForEach-Object {
+      $info = $_ | Get-ScheduledTaskInfo
+      [PSCustomObject]@{
+          Nome         = $_.TaskName
+          Caminho      = $_.TaskPath
+          Estado       = $_.State
+          ÚltimaExec   = $info.LastRunTime
+          ResultadoÚlt = $info.LastTaskResult
+          PróxExec     = $info.NextRunTime
+      }
+  } | Export-Csv "tarefas-agendadas.csv" -NoTypeInformation -Encoding UTF8
+  `} />
 
-      <CodeBlock
-        title="Criando uma tarefa passo a passo"
-        code={`# 1. Definir a Ação (O que a tarefa vai fazer)
-# Nota: Sempre chame o powershell.exe com -File ou -Command
-$action = New-ScheduledTaskAction -Execute "powershell.exe"  -Argument "-NoProfile -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1"
+        <h2>Criando Tarefas Agendadas</h2>
+        <CodeBlock title="Anatomia de uma tarefa: Ação, Gatilho, Configurações, Registro" code={`# 1. AÇÃO — O que a tarefa vai executar
+  $action = New-ScheduledTaskAction `
+    -Execute    "pwsh.exe" `
+    -Argument   "-NoProfile -NonInteractive -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1" `
+    -WorkingDirectory "C:\\Scripts"
 
-# 2. Definir o Gatilho (Quando a tarefa vai rodar - ex: diariamente às 3 da manhã)
-$trigger = New-ScheduledTaskTrigger -Daily -At 3am
+  # 2. GATILHO — Quando vai executar
+  $trigger = New-ScheduledTaskTrigger -Daily -At "03:00AM"
 
-# 3. Definir as Configurações (Opcional - ex: permitir execução em bateria)
-$settings = New-ScheduledTaskSettings -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+  # 3. CONFIGURAÇÕES — Comportamento
+  $settings = New-ScheduledTaskSettings `
+    -AllowStartIfOnBatteries `
+    -DontStopIfGoingOnBatteries `
+    -ExecutionTimeLimit (New-TimeSpan -Hours 2) `  # Máximo 2 horas de execução
+    -RestartCount 3 `                              # Reintentar 3x em caso de falha
+    -RestartInterval (New-TimeSpan -Minutes 5) `  # A cada 5 min
+    -MultipleInstances IgnoreNew                   # Não iniciar outra se já está rodando
 
-# 4. Registrar a Tarefa no sistema
-Register-ScheduledTask -TaskName "MeuBackupDiario"  -Action $action  -Trigger $trigger  -Settings $settings  -User "SYSTEM"  -RunLevel Highest
-`}
-      />
+  # 4. PRINCIPAL — Contexto de execução
+  $principal = New-ScheduledTaskPrincipal `
+    -UserId    "SYSTEM" `
+    -LogonType ServiceAccount `
+    -RunLevel  Highest
 
-      <AlertBox type="info" title="Por que o SYSTEM?">
-        Usar o usuário <code>SYSTEM</code> permite que a tarefa rode mesmo que nenhum usuário esteja logado. O <code>-RunLevel Highest</code> garante privilégios de administrador.
-      </AlertBox>
+  # 5. REGISTRO
+  Register-ScheduledTask `
+    -TaskName "BackupDiario" `
+    -TaskPath "\\MinhsEmpresa" `
+    -Action   $action `
+    -Trigger  $trigger `
+    -Settings $settings `
+    -Principal $principal `
+    -Description "Backup diário dos dados críticos"
 
-      <h2>3. Tipos de Gatilhos (Triggers)</h2>
-      <p>
-        Existem vários tipos de eventos que podem disparar uma tarefa.
-      </p>
+  Write-Host "Tarefa BackupDiario criada com sucesso!" -ForegroundColor Green
+  `} />
 
-      <CodeBlock
-        title="Exemplos de gatilhos"
-        code={`# Gatilho de Inicialização (Boot)
-$triggerBoot = New-ScheduledTaskTrigger -AtStartup
+        <h2>Tipos de Gatilhos</h2>
+        <CodeBlock title="Gatilhos para diferentes situações" code={`# Diário — todo dia às 3h
+  $triggerDiario = New-ScheduledTaskTrigger -Daily -At "03:00AM"
 
-# Gatilho de Logon de Usuário
-$triggerLogon = New-ScheduledTaskTrigger -AtLogOn
+  # Semanal — segundas e sextas às 18h
+  $triggerSemanal = New-ScheduledTaskTrigger -Weekly `
+    -DaysOfWeek Monday, Friday `
+    -At "06:00PM"
 
-# Gatilho Semanal (Segundas e Sextas às 18:00)
-$triggerWeekly = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday, Friday -At 6pm
+  # Mensal — todo dia 1 do mês às 8h
+  $triggerMensal = New-ScheduledTaskTrigger -Monthly `
+    -DaysOfMonth 1 `
+    -At "08:00AM"
 
-# Gatilho Único (Executar uma vez no futuro)
-$triggerOnce = New-ScheduledTaskTrigger -Once -At "2023-12-31 23:59:59"
-`}
-      />
+  # Na inicialização do Windows
+  $triggerBoot = New-ScheduledTaskTrigger -AtStartup
 
-      <h2>4. Gerenciando o Estado da Tarefa</h2>
-      <p>
-        Após criada, você pode habilitar, desabilitar, iniciar ou parar a tarefa manualmente.
-      </p>
+  # No logon de qualquer usuário
+  $triggerLogon = New-ScheduledTaskTrigger -AtLogOn
 
-      <CodeBlock
-        title="Comandos de controle"
-        code={`# Iniciar a tarefa agora mesmo para testar
-Start-ScheduledTask -TaskName "MeuBackupDiario"
+  # Uma vez — data/hora específica
+  $triggerUnico = New-ScheduledTaskTrigger -Once -At "2025-12-31 23:00:00"
 
-# Desabilitar a tarefa temporariamente
-Disable-ScheduledTask -TaskName "MeuBackupDiario"
+  # Repetição — a cada 15 minutos (útil para polling)
+  $triggerRepetido = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 15) `
+    -RepetitionDuration (New-TimeSpan -Hours 8) `  # Por 8 horas
+    -Once -At (Get-Date)
 
-# Reabilitar a tarefa
-Enable-ScheduledTask -TaskName "MeuBackupDiario"
+  # Baseado em evento do Event Log (ex: quando um serviço para)
+  $triggerEvento = New-ScheduledTaskTrigger -AtStartup  # Placeholder
+  # Para eventos, use a interface gráfica ou XML:
+  $xml = @'
+  <QueryList>
+    <Query Id="0" Path="System">
+      <Select Path="System">*[System[Provider[@Name='Service Control Manager'] and EventID=7036]]</Select>
+    </Query>
+  </QueryList>
+  '@
+  `} />
 
-# Excluir a tarefa permanentemente
-Unregister-ScheduledTask -TaskName "MeuBackupDiario" -Confirm:$false
-`}
-      />
+        <h2>Gerenciando o Estado da Tarefa</h2>
+        <CodeBlock title="Controlar e monitorar tarefas" code={`# Iniciar tarefa imediatamente (para teste)
+  Start-ScheduledTask -TaskName "BackupDiario" -TaskPath "\\MinhsEmpresa"
 
-      <h2>5. Exportando e Importando Tarefas</h2>
-      <p>
-        Você pode salvar a definição de uma tarefa em XML para migrar entre servidores ou fazer backup.
-      </p>
+  # Verificar se está rodando
+  (Get-ScheduledTask -TaskName "BackupDiario").State  # Running, Ready, Disabled
 
-      <CodeBlock
-        title="Backup de tarefas"
-        code={`# Exportar para XML
-Export-ScheduledTask -TaskName "MinhaTarefa" | Out-File "C:\\Backups\\Tarefa.xml"
+  # Aguardar conclusão
+  do {
+      Start-Sleep -Seconds 5
+      $estado = (Get-ScheduledTask -TaskName "BackupDiario").State
+  } while ($estado -eq "Running")
+  $info = Get-ScheduledTask -TaskName "BackupDiario" | Get-ScheduledTaskInfo
+  "Concluído com código: $($info.LastTaskResult)"  # 0 = sucesso
 
-# Importar de um XML (usando Register-ScheduledTask com o parâmetro -Xml)
-$taskXml = Get-Content "C:\\Backups\\Tarefa.xml" -Raw
-Register-ScheduledTask -TaskName "TarefaImportada" -Xml $taskXml
-`}
-      />
+  # Parar tarefa em execução
+  Stop-ScheduledTask -TaskName "BackupDiario"
 
-      <AlertBox type="warning" title="Dica de Troubleshooting">
-        Se sua tarefa "roda" mas nada acontece, verifique o caminho do script e se o usuário que executa a tarefa tem permissões na pasta. Use <code>Out-File</code> dentro do seu script para criar logs e ver o que está falhando durante a execução agendada.
-      </AlertBox>
+  # Habilitar e desabilitar
+  Enable-ScheduledTask  -TaskName "BackupDiario"
+  Disable-ScheduledTask -TaskName "BackupDiario"
 
-      <h2>6. Comparação com schtasks.exe</h2>
-      <p>
-        Embora o <code>schtasks.exe</code> ainda funcione, os cmdlets do PowerShell são preferíveis por retornarem objetos que podem ser manipulados e integrados a outros scripts.
-      </p>
-      
-      <CodeBlock
-        title="Exemplo de integração"
-        code={`# Parar todas as tarefas que falharam na última execução
-Get-ScheduledTask | Get-ScheduledTaskInfo | Where-Object { $_.LastTaskResult -ne 0 } | ForEach-Object {
-    Write-Warning "Tarefa falhou: $($_.TaskName)"
-}
-`}
-      />
+  # Remover tarefa
+  Unregister-ScheduledTask -TaskName "BackupDiario" -Confirm:$false
+  `} />
 
-    </PageContainer>
-  );
-}
+        <h2>Múltiplas Ações e Tarefas Avançadas</h2>
+        <CodeBlock title="Tarefas com múltiplas ações e monitoramento" code={`# Tarefa com MÚLTIPLAS ações (executadas em sequência)
+  $acoes = @(
+      New-ScheduledTaskAction -Execute "pwsh.exe" `
+          -Argument "-File C:\\Scripts\\Pre-Backup.ps1",
+      New-ScheduledTaskAction -Execute "pwsh.exe" `
+          -Argument "-File C:\\Scripts\\Backup.ps1",
+      New-ScheduledTaskAction -Execute "pwsh.exe" `
+          -Argument "-File C:\\Scripts\\Pos-Backup.ps1"
+  )
+
+  $trigger = New-ScheduledTaskTrigger -Daily -At "02:00AM"
+  Register-ScheduledTask -TaskName "BackupCompleto" `
+    -Action $acoes -Trigger $trigger -User "SYSTEM" -RunLevel Highest
+
+  # Relatório de tarefas com falha recente
+  Get-ScheduledTask |
+      Get-ScheduledTaskInfo |
+      Where-Object { $_.LastTaskResult -ne 0 -and $_.LastRunTime -gt (Get-Date).AddDays(-7) } |
+      Select-Object TaskName, LastRunTime, LastTaskResult |
+      Format-Table -AutoSize
+
+  # Migrar tarefas de um servidor para outro
+  $tarefas = Get-ScheduledTask -TaskPath "\\MinhsEmpresa"
+  foreach ($tarefa in $tarefas) {
+      $xml = Export-ScheduledTask -TaskName $tarefa.TaskName -TaskPath $tarefa.TaskPath
+      # No servidor destino:
+      Register-ScheduledTask -Xml $xml -TaskName $tarefa.TaskName -TaskPath $tarefa.TaskPath -Force
+  }
+  `} />
+
+        <AlertBox type="info" title="SYSTEM vs usuário específico">
+          Use <code>-User "SYSTEM"</code> para tarefas que rodam sem usuário logado.
+          Use <code>-User "EMPRESA\\svc-backup" -Password "senha"</code> quando a tarefa
+          precisa de permissões de rede ou acesso a recursos compartilhados. Nunca use
+          credenciais de usuário real em tarefas agendadas — prefira contas de serviço (service accounts).
+        </AlertBox>
+
+        <AlertBox type="warning" title="Execution Policy">
+          Para que scripts PS1 rodem em tarefas agendadas, passe explicitamente:
+          <code>pwsh.exe -ExecutionPolicy Bypass -File script.ps1</code>
+          ou assine o script com um certificado de código.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
