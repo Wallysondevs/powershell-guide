@@ -1,121 +1,248 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Azure() {
-  return (
-    <PageContainer
-      title="Azure PowerShell"
-      subtitle="Gerencie recursos na nuvem Azure com o módulo Az: VMs, storage, redes e automação."
-      difficulty="avançado"
-      timeToRead="30 min"
-    >
-      <p>
-        O módulo Azure PowerShell (Az) é a interface de linha de comando para gerenciar todos os
-        recursos do Microsoft Azure. Com ele, você pode automatizar completamente o ciclo de vida
-        de infraestrutura na nuvem.
-      </p>
+  export default function Azure() {
+    return (
+      <PageContainer
+        title="Azure PowerShell"
+        subtitle="Gerencie VMs, storage, redes, RBAC, App Services e muito mais com o módulo Az."
+        difficulty="avançado"
+        timeToRead="40 min"
+      >
+        <p>
+          O módulo Az é a interface oficial do PowerShell para gerenciar recursos no Microsoft Azure.
+          Com mais de 70 sub-módulos, cobre desde VMs e storage até Kubernetes, Functions,
+          bancos de dados e segurança — tudo com suporte a automação e CI/CD.
+        </p>
 
-      <h2>Instalação e Autenticação</h2>
-      <CodeBlock title="Setup do módulo Az" code={`# Instalar módulo Az
-Install-Module -Name Az -Repository PSGallery -Force
+        <h2>Instalação e Autenticação</h2>
+        <CodeBlock title="Configurando o ambiente Az" code={`# Instalar módulo Az
+  Install-Module -Name Az -Scope CurrentUser -Force -AllowClobber
 
-# Atualizar módulo existente
-Update-Module -Name Az
+  # Atualizar módulo
+  Update-Module -Name Az
 
-# Autenticar (browser interativo)
-Connect-AzAccount
+  # Autenticação interativa (abre browser)
+  Connect-AzAccount
 
-# Autenticar com Service Principal (para automação)
-$tenantId = $env:AZURE_TENANT_ID
-$clientId = $env:AZURE_CLIENT_ID
-$secret   = ConvertTo-SecureString $env:AZURE_CLIENT_SECRET -AsPlainText -Force
-$cred     = [System.Management.Automation.PSCredential]::new($clientId, $secret)
+  # Autenticação com Service Principal (automação/CI-CD)
+  $cred = [PSCredential]::new("CLIENT_ID", (ConvertTo-SecureString "CLIENT_SECRET" -AsPlainText -Force))
+  Connect-AzAccount -ServicePrincipal -Credential $cred -Tenant "TENANT_ID"
 
-Connect-AzAccount -ServicePrincipal  -Credential $cred  -TenantId $tenantId
+  # Autenticação com identidade gerenciada (dentro de VM ou Azure Function)
+  Connect-AzAccount -Identity
 
-# Verificar contexto atual
-Get-AzContext
-Get-AzSubscription | Format-Table Name, Id, State
-Set-AzContext -SubscriptionId "sua-subscription-id"
-`} />
+  # Listar e selecionar subscription
+  Get-AzSubscription | Select-Object Name, Id, State
+  Set-AzContext -SubscriptionId "sua-subscription-id"
 
-      <h2>Resource Groups e VMs</h2>
-      <CodeBlock title="Gerenciamento de recursos e máquinas virtuais" code={`# Criar Resource Group
-New-AzResourceGroup -Name "rg-producao" -Location "brazilsouth"
+  # Salvar contexto para scripts não interativos
+  $ctx = Get-AzContext
+  Save-AzContext -Path "C:\\Temp\\azure-context.json"
+  Import-AzContext -Path "C:\\Temp\\azure-context.json"
+  `} />
 
-# Listar VMs
-Get-AzVM | Select-Object Name, ResourceGroupName, Location,
-    @{N="Size"; E={$_.HardwareProfile.VmSize}},
-    @{N="OS";   E={$_.StorageProfile.OsDisk.OsType}}
+        <h2>Resource Groups e VMs</h2>
+        <CodeBlock title="Gerenciando máquinas virtuais" code={`# Resource Groups
+  New-AzResourceGroup -Name "RG-Producao" -Location "brazilsouth"
+  Get-AzResourceGroup | Select-Object ResourceGroupName, Location, ProvisioningState
 
-# Criar VM simples
-$credAdmin = Get-Credential -Message "Credenciais do admin"
-New-AzVM -ResourceGroupName "rg-producao"  -Name "vm-web01"  -Location "brazilsouth"  -VirtualNetworkName "vnet-prod"  -SubnetName "subnet-web"  -SecurityGroupName "nsg-web"  -PublicIpAddressName "pip-web01"  -Credential $credAdmin  -Size "Standard_B2s"  -Image "Win2022Datacenter"
+  # Listar VMs e status
+  Get-AzVM | Select-Object Name, ResourceGroupName, Location |
+      ForEach-Object {
+          $status = (Get-AzVM -Name $_.Name -ResourceGroupName $_.ResourceGroupName -Status).Statuses |
+              Where-Object Code -like "PowerState/*"
+          [PSCustomObject]@{
+              Nome  = $_.Name
+              Grupo = $_.ResourceGroupName
+              Estado = $status.DisplayStatus
+          }
+      }
 
-# Iniciar, parar, reiniciar VMs
-Start-AzVM   -ResourceGroupName "rg-prod" -Name "vm-web01"
-Stop-AzVM    -ResourceGroupName "rg-prod" -Name "vm-web01" -Force
-Restart-AzVM -ResourceGroupName "rg-prod" -Name "vm-web01"
+  # Criar VM
+  $adminCred = Get-Credential "adminPS"
+  New-AzVM `
+    -ResourceGroupName "RG-Producao" `
+    -Name "VM-WebServer" `
+    -Location "brazilsouth" `
+    -Image "Win2022Datacenter" `
+    -Size "Standard_B2s" `
+    -Credential $adminCred `
+    -OpenPorts 80, 443, 3389
 
-# Listar VMs paradas (desalocadas) — evitar cobranças
-Get-AzVM -Status | Where-Object PowerState -eq "VM deallocated" |
-    Select-Object Name, ResourceGroupName
-`} />
+  # Iniciar, parar e desalocar VMs
+  Start-AzVM      -Name "VM-WebServer" -ResourceGroupName "RG-Producao"
+  Stop-AzVM       -Name "VM-WebServer" -ResourceGroupName "RG-Producao" -Force
+  # Desalocar libera o IP e para a cobrança de computação:
+  Stop-AzVM       -Name "VM-WebServer" -ResourceGroupName "RG-Producao" -Force
 
-      <h2>Storage Account</h2>
-      <CodeBlock title="Gerenciando blobs e arquivos Azure Storage" code={`# Criar Storage Account
-New-AzStorageAccount -ResourceGroupName "rg-producao"  -Name "storagebackupsprod"  -Location "brazilsouth"  -SkuName "Standard_LRS"  -Kind "StorageV2"
+  # Redimensionar VM
+  $vm = Get-AzVM -Name "VM-WebServer" -ResourceGroupName "RG-Producao"
+  $vm.HardwareProfile.VmSize = "Standard_B4ms"
+  Update-AzVM -VM $vm -ResourceGroupName "RG-Producao"
 
-# Obter contexto do storage
-$storageKey = (Get-AzStorageAccountKey -ResourceGroupName "rg-producao"  -Name "storagebackupsprod")[0].Value
-$ctx = New-AzStorageContext -StorageAccountName "storagebackupsprod"  -StorageAccountKey $storageKey
+  # Snapshot de disco
+  $disco = (Get-AzVM -Name "VM-WebServer" -ResourceGroupName "RG-Producao").StorageProfile.OsDisk.ManagedDisk
+  $config = New-AzSnapshotConfig -SourceResourceId $disco.Id -Location "brazilsouth" -CreateOption Copy
+  New-AzSnapshot -ResourceGroupName "RG-Producao" -SnapshotName "Snap-OsDisk-$(Get-Date -Format 'yyyyMMdd')" -Snapshot $config
+  `} />
 
-# Criar container e fazer upload
-New-AzStorageContainer -Name "backups" -Context $ctx -Permission Off
+        <h2>Storage Account</h2>
+        <CodeBlock title="Gerenciando blobs, filas e tabelas" code={`# Criar Storage Account
+  New-AzStorageAccount `
+    -ResourceGroupName "RG-Producao" `
+    -Name "storageempresa2024" `
+    -Location "brazilsouth" `
+    -SkuName "Standard_LRS" `
+    -Kind StorageV2 `
+    -AccessTier Hot
 
-# Upload de arquivo
-Set-AzStorageBlobContent -File "C:\\Backup\\db.bak"  -Container "backups"  -Blob "backups/db-$(Get-Date -Format 'yyyyMMdd').bak"  -Context $ctx
+  # Obter contexto de storage
+  $ctx = (Get-AzStorageAccount -ResourceGroupName "RG-Producao" -Name "storageempresa2024").Context
 
-# Listar blobs
-Get-AzStorageBlob -Container "backups" -Context $ctx |
-    Select-Object Name, Length, LastModified
+  # Criar container e fazer upload
+  New-AzStorageContainer -Name "backups" -Context $ctx -Permission Off
 
-# Download
-Get-AzStorageBlobContent -Container "backups"  -Blob "backups/db-20240315.bak"  -Destination "C:\\Restore\\"  -Context $ctx
+  # Upload de arquivo
+  Set-AzStorageBlobContent -Container "backups" `
+    -File "C:\\Temp\\backup.zip" `
+    -Blob "2025/01/backup.zip" `
+    -Context $ctx
 
-# Limpar blobs antigos (30+ dias)
-Get-AzStorageBlob -Container "backups" -Context $ctx |
-    Where-Object { $_.LastModified -lt (Get-Date).AddDays(-30) } |
-    Remove-AzStorageBlob
-`} />
+  # Download de arquivo
+  Get-AzStorageBlobContent -Container "backups" `
+    -Blob "2025/01/backup.zip" `
+    -Destination "C:\\Restaurado" `
+    -Context $ctx
 
-      <h2>Azure Automation e Tags</h2>
-      <CodeBlock title="Automação e organização de recursos" code={`# Aplicar tags em recursos
-$tags = @{ Ambiente="Producao"; Time="TI"; CostCenter="CC-001" }
-Set-AzResource -ResourceGroupName "rg-producao"  -ResourceName "vm-web01"  -ResourceType "Microsoft.Compute/virtualMachines"  -Tag $tags -Force
+  # Listar blobs
+  Get-AzStorageBlob -Container "backups" -Context $ctx |
+      Select-Object Name, Length, LastModified | Format-Table
 
-# Listar todos os recursos de um ambiente por tag
-Get-AzResource -TagName "Ambiente" -TagValue "Producao" |
-    Select-Object Name, ResourceType, Location
+  # Gerar SAS URL temporária (validade 1 hora)
+  $sas = New-AzStorageBlobSASToken `
+    -Container "backups" `
+    -Blob "2025/01/backup.zip" `
+    -Permission r `
+    -ExpiryTime (Get-Date).AddHours(1) `
+    -Context $ctx `
+    -FullUri
+  Write-Host "URL de acesso (1h): $sas"
 
-# Custo estimado: listar VMs com tamanho caro
-Get-AzVM | Where-Object {
-    $_.HardwareProfile.VmSize -like "Standard_D*" -or
-    $_.HardwareProfile.VmSize -like "Standard_E*"
-} | Select-Object Name, @{N="Size";E={$_.HardwareProfile.VmSize}}
+  # Deletar blobs antigos (mais de 30 dias)
+  $limite = (Get-Date).AddDays(-30)
+  Get-AzStorageBlob -Container "backups" -Context $ctx |
+      Where-Object { $_.LastModified -lt $limite } |
+      Remove-AzStorageBlob -Force
+  `} />
 
-# Desligar VMs de desenvolvimento às 19h (via Runbook ou Agendamento)
-Get-AzVM -Status |
-    Where-Object { $_.Tags["Ambiente"] -eq "Desenvolvimento" -and $_.PowerState -eq "VM running" } |
-    Stop-AzVM -Force -NoWait
-`} />
+        <h2>Redes e Segurança</h2>
+        <CodeBlock title="VNets, NSGs e firewall" code={`# Criar Virtual Network e subnet
+  $vnet = New-AzVirtualNetwork `
+    -Name "VNET-Producao" `
+    -ResourceGroupName "RG-Producao" `
+    -Location "brazilsouth" `
+    -AddressPrefix "10.0.0.0/16"
 
-      <AlertBox type="info" title="Azure Cloud Shell">
-        O Azure PowerShell já vem instalado no Azure Cloud Shell, acessível em
-        shell.azure.com. Nenhuma instalação local necessária — use para gerenciamento
-        direto do portal Azure.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+  Add-AzVirtualNetworkSubnetConfig `
+    -Name "Subnet-Web" `
+    -VirtualNetwork $vnet `
+    -AddressPrefix "10.0.1.0/24"
+  $vnet | Set-AzVirtualNetwork
+
+  # Criar Network Security Group com regras
+  $nsg = New-AzNetworkSecurityGroup `
+    -Name "NSG-Web" `
+    -ResourceGroupName "RG-Producao" `
+    -Location "brazilsouth"
+
+  $nsg | Add-AzNetworkSecurityRuleConfig `
+    -Name "Allow-HTTPS" `
+    -Direction Inbound `
+    -Priority 100 `
+    -Protocol Tcp `
+    -SourceAddressPrefix Internet `
+    -SourcePortRange "*" `
+    -DestinationAddressPrefix "*" `
+    -DestinationPortRange 443 `
+    -Access Allow | Set-AzNetworkSecurityGroup
+
+  # Listar IPs públicos
+  Get-AzPublicIpAddress -ResourceGroupName "RG-Producao" |
+      Select-Object Name, IpAddress, IdleTimeoutInMinutes, PublicIpAllocationMethod
+  `} />
+
+        <h2>RBAC e Políticas de Acesso</h2>
+        <CodeBlock title="Controle de acesso com funções e políticas" code={`# Listar atribuições de função (RBAC)
+  Get-AzRoleAssignment -ResourceGroupName "RG-Producao" |
+      Select-Object DisplayName, RoleDefinitionName, Scope | Format-Table
+
+  # Atribuir função a usuário (Contributor no Resource Group)
+  $usuario = Get-AzADUser -UserPrincipalName "carlos@empresa.com"
+  New-AzRoleAssignment `
+    -ObjectId $usuario.Id `
+    -RoleDefinitionName "Contributor" `
+    -ResourceGroupName "RG-Producao"
+
+  # Atribuir função a Service Principal (automação)
+  $sp = Get-AzADServicePrincipal -DisplayName "CI-CD-Pipeline"
+  New-AzRoleAssignment `
+    -ObjectId $sp.Id `
+    -RoleDefinitionName "Reader" `
+    -Scope "/subscriptions/$((Get-AzContext).Subscription.Id)"
+
+  # Remover atribuição
+  Remove-AzRoleAssignment -ObjectId $usuario.Id `
+    -RoleDefinitionName "Contributor" `
+    -ResourceGroupName "RG-Producao"
+
+  # Azure Policy — verificar conformidade
+  Get-AzPolicyState -ResourceGroupName "RG-Producao" |
+      Where-Object ComplianceState -eq "NonCompliant" |
+      Select-Object ResourceId, PolicyDefinitionName, ComplianceState
+  `} />
+
+        <h2>Tags e Gestão de Custos</h2>
+        <CodeBlock title="Organizando recursos com tags e monitorando custos" code={`# Aplicar tags a um Resource Group
+  Set-AzResourceGroup -Name "RG-Producao" -Tag @{
+      Ambiente    = "Producao"
+      CentrodeCusto = "TI-001"
+      Responsavel = "carlos@empresa.com"
+      Projeto     = "ERP-Migração"
+  }
+
+  # Aplicar tags a uma VM específica
+  $vm = Get-AzVM -Name "VM-WebServer" -ResourceGroupName "RG-Producao"
+  Update-AzTag -ResourceId $vm.Id -Tag @{ Ambiente="Producao"; Tier="Web" } -Operation Merge
+
+  # Listar todos os recursos sem a tag "Ambiente"
+  Get-AzResource | Where-Object { -not $_.Tags.ContainsKey("Ambiente") } |
+      Select-Object Name, ResourceType, ResourceGroupName
+
+  # Relatório de custo por tag (via Azure Cost Management)
+  # (requer módulo Az.CostManagement)
+  Install-Module -Name Az.CostManagement -Scope CurrentUser
+  Get-AzCostManagementExport -Scope "/subscriptions/$((Get-AzContext).Subscription.Id)"
+
+  # Automatizar desligamento de VMs de desenvolvimento fora do horário
+  $vmsDesenv = Get-AzVM -ResourceGroupName "RG-Desenvolvimento"
+  $horaAtual = (Get-Date).Hour
+  if ($horaAtual -ge 20 -or $horaAtual -lt 8) {
+      foreach ($vm in $vmsDesenv) {
+          Stop-AzVM -Name $vm.Name -ResourceGroupName $vm.ResourceGroupName -Force -AsJob
+          Write-Host "Desligando $($vm.Name)..."
+      }
+  }
+  `} />
+
+        <AlertBox type="info" title="Az vs AzureRM">
+          O módulo <code>Az</code> é o módulo atual e recomendado. O antigo <code>AzureRM</code>
+          foi aposentado em 29 de fevereiro de 2024. Migre seus scripts para <code>Az</code>.
+          Geralmente basta renomear <code>Login-AzureRmAccount</code> para <code>Connect-AzAccount</code>
+          e <code>AzureRm</code> para <code>Az</code> nos nomes dos cmdlets.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
