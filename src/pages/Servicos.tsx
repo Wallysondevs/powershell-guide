@@ -1,139 +1,213 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Servicos() {
-  return (
-    <PageContainer
-      title="Gerenciamento de Serviços"
-      subtitle="Aprenda a controlar serviços do Windows de forma eficiente usando PowerShell."
-      difficulty="intermediario"
-      timeToRead="18 min"
-    >
-      <p>
-        Serviços são programas que rodam em segundo plano, independentemente de um usuário estar logado. No PowerShell, o gerenciamento de serviços é feito através de cmdlets simples e consistentes que substituem ferramentas antigas como o <code>sc.exe</code> ou o console <code>services.msc</code>.
-      </p>
+  export default function Servicos() {
+    return (
+      <PageContainer
+        title="Gerenciamento de Serviços"
+        subtitle="Controle, monitore, configure e automatize serviços do Windows com PowerShell."
+        difficulty="intermediario"
+        timeToRead="28 min"
+      >
+        <p>
+          Serviços são programas que rodam em segundo plano, independentemente de um usuário estar logado.
+          O PowerShell oferece cmdlets completos para gerenciar o ciclo de vida de serviços — desde
+          consulta e controle básico até monitoramento avançado e criação de serviços personalizados.
+        </p>
 
-      <h2>1. Consultando Serviços</h2>
-      <p>
-        O cmdlet principal é o <code>Get-Service</code> (alias <code>gsv</code>). Ele permite listar todos os serviços ou buscar por nomes específicos.
-      </p>
+        <h2>Consultando Serviços</h2>
+        <CodeBlock title="Listando e inspecionando serviços" code={`# Listar todos os serviços
+  Get-Service | Format-Table Name, DisplayName, Status, StartType -AutoSize
 
-      <CodeBlock
-        title="Listando serviços"
-        code={`# Listar todos os serviços instalados
-Get-Service
+  # Filtrar por nome ou padrão
+  Get-Service -Name *sql*
+  Get-Service -DisplayName "*Windows Update*"
 
-# Buscar serviços que contenham "sql" no nome
-Get-Service -Name *sql*
+  # Apenas serviços em execução
+  Get-Service | Where-Object Status -eq "Running" | Sort-Object DisplayName
 
-# Buscar por nome de exibição (DisplayName)
-Get-Service -DisplayName "*Firewall*"
+  # Serviços parados que deveriam estar rodando (StartType = Automatic)
+  Get-Service |
+      Where-Object { $_.StartType -eq "Automatic" -and $_.Status -ne "Running" } |
+      Select-Object Name, DisplayName, Status
 
-# Listar apenas serviços que estão em execução (Running)
-Get-Service | Where-Object { $_.Status -eq "Running" }
+  # Informações detalhadas via CIM (mais completo que Get-Service)
+  Get-CimInstance Win32_Service |
+      Where-Object State -eq "Running" |
+      Select-Object Name, DisplayName, StartMode, PathName, StartName |
+      Format-Table -AutoSize
 
-# Listar serviços que estão parados (Stopped)
-Get-Service | Where-Object Status -eq "Stopped"
-`}
-      />
+  # Obter PID de um serviço (para cruzar com Get-Process)
+  $svc = Get-WmiObject Win32_Service -Filter "Name='Spooler'"
+  Get-Process -Id $svc.ProcessId
+  `} />
 
-      <h2>2. Iniciando e Parando Serviços</h2>
-      <p>
-        O controle do estado do serviço é feito com os verbos <code>Start</code>, <code>Stop</code> e <code>Restart</code>.
-      </p>
+        <h2>Controlando o Estado</h2>
+        <CodeBlock title="Iniciar, parar, reiniciar e pausar" code={`# Iniciar, parar e reiniciar
+  Start-Service   -Name "Spooler"
+  Stop-Service    -Name "Spooler" -Force         # -Force para parar com dependentes
+  Restart-Service -Name "wuauserv"               # Windows Update
 
-      <CodeBlock
-        title="Controlando o estado"
-        code={`# Iniciar o serviço do Spooler de Impressão
-Start-Service -Name Spooler
+  # Pausar e retomar (apenas serviços que suportam pausa)
+  Suspend-Service -Name "Spooler"
+  Resume-Service  -Name "Spooler"
 
-# Parar o serviço do Spooler
-Stop-Service -Name Spooler
+  # Aguardar um serviço iniciar com timeout
+  $timeout = 60  # segundos
+  $inicio  = Get-Date
+  Start-Service "W3SVC"
+  do {
+      Start-Sleep -Seconds 2
+      $status = (Get-Service "W3SVC").Status
+      if ((New-TimeSpan -Start $inicio).TotalSeconds -gt $timeout) {
+          throw "Timeout: W3SVC não iniciou em $timeout segundos"
+      }
+  } while ($status -ne "Running")
+  Write-Host "W3SVC está rodando" -ForegroundColor Green
 
-# Reiniciar um serviço (comum após mudar configurações)
-Restart-Service -Name "wuauserv" # Windows Update
+  # Parar e reiniciar múltiplos serviços
+  $servicos = "MSSQLSERVER","SQLSERVERAGENT","SQLBrowser"
+  $servicos | ForEach-Object { Stop-Service $_ -Force -ErrorAction SilentlyContinue }
+  Start-Sleep -Seconds 5
+  $servicos | ForEach-Object { Start-Service $_ -ErrorAction SilentlyContinue }
+  `} />
 
-# Parar um serviço e todos os que dependem dele
-Stop-Service -Name "NomeDoServicoPai" -Force
-`}
-      />
+        <h2>Configurando Serviços</h2>
+        <CodeBlock title="Alterando tipo de inicialização e outras configurações" code={`# Mudar tipo de inicialização
+  Set-Service -Name "Spooler"    -StartupType Automatic
+  Set-Service -Name "XboxGipSvc" -StartupType Disabled
+  Set-Service -Name "wuauserv"   -StartupType Manual
 
-      <AlertBox type="warning" title="Privilégios Administrativos">
-        Quase todas as operações que alteram o estado de um serviço (iniciar, parar, configurar) exigem que o PowerShell esteja rodando como Administrador.
-      </AlertBox>
+  # Mudar descrição
+  Set-Service -Name "MeuServico" -Description "Serviço de monitoramento de infraestrutura v2"
 
-      <h2>3. Configurando Serviços</h2>
-      <p>
-        Para alterar como um serviço se comporta (ex: mudar o tipo de inicialização de Manual para Automático), usamos o <code>Set-Service</code>.
-      </p>
+  # Alterar conta de serviço (requer sc.exe no PS5.1)
+  sc.exe config "MeuServico" obj= "EMPRESA\\svc-monitor" password= "Senha@123"
+  # No PS7 e Windows Server 2019+:
+  Set-Service -Name "MeuServico" -Credential (Get-Credential "EMPRESA\\svc-monitor")
 
-      <CodeBlock
-        title="Alterando configurações"
-        code={`# Mudar o tipo de inicialização para Automático
-Set-Service -Name "Spooler" -StartupType Automatic
+  # Configurar recuperação automática (restart em falha)
+  sc.exe failure "MeuServico" reset= 86400 actions= restart/60000/restart/60000/restart/60000
+  # Argumentos: reset=secs antes de zerar contador, actions= ação/delay(ms) para cada falha
 
-# Desativar um serviço completamente
-Set-Service -Name "XboxGipSvc" -StartupType Disabled
+  # Via WMI — configurar múltiplos parâmetros
+  $wmi = Get-WmiObject -Class Win32_Service -Filter "Name='MeuServico'"
+  $wmi.Change($null,$null,$null,$null,$null,$null,$null,"novasenha") | Out-Null
+  `} />
 
-# Alterar a descrição de um serviço
-Set-Service -Name "MeuServico" -Description "Este é o meu serviço personalizado de backup."
-`}
-      />
+        <h2>Dependências de Serviços</h2>
+        <CodeBlock title="Visualizando árvore de dependências" code={`# O que este serviço precisa para funcionar
+  (Get-Service -Name LanmanWorkstation).ServicesDependedOn |
+      Select-Object Name, DisplayName, Status
 
-      <h2>4. Dependências de Serviços</h2>
-      <p>
-        Muitos serviços dependem de outros para funcionar. O PowerShell facilita visualizar essa árvore de dependências.
-      </p>
+  # Quem depende deste serviço
+  (Get-Service -Name LanmanServer).DependentServices |
+      Select-Object Name, DisplayName, Status
 
-      <CodeBlock
-        title="Verificando dependências"
-        code={`# Quais serviços este serviço depende?
-(Get-Service -Name LanmanWorkstation).ServicesDependedOn
+  # Árvore completa de dependências (recursiva)
+  function Get-ServiceTree {
+      param([string]$Nome, [int]$Nivel = 0)
+      $svc = Get-Service -Name $Nome
+      $indent = "  " * $Nivel
+      Write-Host "$indent→ $($svc.DisplayName) [$($svc.Status)]"
+      foreach ($dep in $svc.DependentServices) {
+          Get-ServiceTree -Nome $dep.Name -Nivel ($Nivel + 1)
+      }
+  }
+  Get-ServiceTree "LanmanServer"
 
-# Quais serviços dependem deste serviço?
-(Get-Service -Name LanmanWorkstation).DependentServices
-`}
-      />
+  # Parar um serviço e todos que dependem dele (na ordem correta)
+  function Stop-ServiceComDependentes {
+      param([string]$Nome)
+      $svc = Get-Service -Name $Nome
+      foreach ($dep in $svc.DependentServices) {
+          Stop-ServiceComDependentes -Nome $dep.Name
+      }
+      if ($svc.Status -eq "Running") {
+          Stop-Service -Name $Nome -Force
+          Write-Host "Parado: $($svc.DisplayName)"
+      }
+  }
+  `} />
 
-      <h2>5. Criando e Removendo Serviços</h2>
-      <p>
-        Você pode registrar seus próprios executáveis como serviços do Windows.
-      </p>
+        <h2>Criando Serviços Personalizados</h2>
+        <CodeBlock title="Registrando e removendo serviços" code={`# Criar novo serviço
+  New-Service `
+    -Name "MonitorInfra" `
+    -BinaryPathName "C:\\Apps\\Monitor\\monitor.exe --config C:\\Apps\\Monitor\\config.json" `
+    -DisplayName "Monitor de Infraestrutura" `
+    -Description "Monitora servidores e envia alertas via e-mail" `
+    -StartupType Automatic `
+    -Credential (Get-Credential "NT AUTHORITY\\LocalService")
 
-      <CodeBlock
-        title="Gerenciamento avançado"
-        code={`# Criar um novo serviço
-New-Service -Name "MeuAppService"  -BinaryPathName "C:\\Apps\\MeuApp.exe"  -DisplayName "Meu Aplicativo Personalizado"  -Description "Serviço que roda meu app de monitoramento"  -StartupType Manual
+  # Verificar se foi criado
+  Get-Service "MonitorInfra" | Select-Object Name, Status, StartType
 
-# Remover um serviço (PowerShell 6+ ou Windows PowerShell via sc.exe)
-# No Windows PowerShell 5.1, use:
-sc.exe delete "MeuAppService"
+  # Iniciar imediatamente
+  Start-Service "MonitorInfra"
 
-# No PowerShell 6+, use o cmdlet nativo:
-Remove-Service -Name "MeuAppService"
-`}
-      />
+  # Remover serviço
+  Stop-Service "MonitorInfra" -Force -ErrorAction SilentlyContinue
+  # PS 6+:
+  Remove-Service -Name "MonitorInfra"
+  # PS 5.1:
+  sc.exe delete "MonitorInfra"
+  `} />
 
-      <h2>6. Estados de Transição e Logs</h2>
-      <p>
-        Às vezes, um serviço fica "preso" em um estado de transição (ex: <code>StartPending</code>).
-      </p>
+        <h2>Monitoramento e Alertas</h2>
+        <CodeBlock title="Script de monitoramento de serviços críticos" code={`function Watch-ServicoCritico {
+      param(
+          [string[]]$Servicos,
+          [int]$IntervaloSegundos = 60,
+          [string]$EmailAlerta = "ti@empresa.com"
+      )
 
-      <CodeBlock
-        title="Investigando problemas"
-        code={`# Ver o estado detalhado, incluindo se ele pode ser pausado/parado
-Get-Service Spooler | Select-Object Name, Status, CanPauseAndContinue, CanStop
+      Write-Host "Monitorando $($Servicos.Count) serviços..." -ForegroundColor Cyan
 
-# Verificar logs de erro relacionados a serviços no Event Viewer
-Get-WinEvent -LogName System | Where-Object { $_.ProviderName -eq "Service Control Manager" } | Select-Object -First 10
-`}
-      />
+      while ($true) {
+          foreach ($nome in $Servicos) {
+              $svc = Get-Service -Name $nome -ErrorAction SilentlyContinue
+              if (-not $svc) {
+                  Write-Warning "Serviço não encontrado: $nome"
+                  continue
+              }
 
-      <AlertBox type="info" title="Dica">
-        Se um serviço não parar com <code>Stop-Service</code>, você pode precisar identificar o processo (PID) associado e finalizá-lo com <code>Stop-Process</code>. Use <code>Get-WmiObject Win32_Service | Select-Object Name, ProcessId</code> para encontrar o PID.
-      </AlertBox>
+              if ($svc.Status -ne "Running") {
+                  Write-Warning "$nome está $($svc.Status) — tentando reiniciar..."
+                  try {
+                      Start-Service -Name $nome -ErrorAction Stop
+                      Write-Host "$nome reiniciado com sucesso" -ForegroundColor Green
 
-    </PageContainer>
-  );
-}
+                      # Log do evento
+                      Write-EventLog -LogName Application -Source "MonitorPS" `
+                          -EntryType Warning -EventId 1001 `
+                          -Message "Serviço $nome foi reiniciado automaticamente"
+                  } catch {
+                      Write-Error "Falha ao reiniciar $nome: $_"
+                  }
+              }
+          }
+          Start-Sleep -Seconds $IntervaloSegundos
+      }
+  }
+
+  # Monitorar serviços críticos
+  Watch-ServicoCritico -Servicos @("W3SVC","MSSQLSERVER","WinRM") -IntervaloSegundos 30
+  `} />
+
+        <AlertBox type="warning" title="Privilégios Administrativos">
+          Quase todas as operações que alteram o estado de um serviço (iniciar, parar, configurar) 
+          exigem que o PowerShell seja executado como Administrador.
+          Use <code>Start-Process pwsh -Verb RunAs</code> para elevar.
+        </AlertBox>
+
+        <AlertBox type="info" title="sc.exe vs Set-Service">
+          Para configurações avançadas não disponíveis em <code>Set-Service</code> (como
+          política de recuperação em falha, contas de serviço com senha, ou tipo de serviço),
+          use diretamente o <code>sc.exe</code> que ainda está disponível no PowerShell.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
