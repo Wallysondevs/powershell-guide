@@ -1,147 +1,207 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function ConteudoArquivos() {
-  return (
-    <PageContainer
-      title="Manipulação de Conteúdo de Arquivos"
-      subtitle="Lendo, escrevendo e editando dados dentro de arquivos de texto e binários."
-      difficulty="intermediario"
-      timeToRead="20 min"
-    >
-      <p>
-        Ler e escrever conteúdo em arquivos é uma tarefa diária para qualquer administrador de sistemas. O PowerShell oferece cmdlets poderosos que tratam o conteúdo de arquivos como objetos ou arrays de strings, facilitando o processamento linha por linha.
-      </p>
+  export default function ConteudoArquivos() {
+    return (
+      <PageContainer
+        title="Manipulação de Conteúdo de Arquivos"
+        subtitle="Lendo, escrevendo, filtrando e processando dados em arquivos de texto e binários."
+        difficulty="intermediario"
+        timeToRead="28 min"
+      >
+        <p>
+          Ler e escrever conteúdo em arquivos é uma tarefa diária. O PowerShell trata
+          conteúdo de arquivo como arrays de objetos, tornando filtragem, substituição
+          e processamento em lote muito mais elegantes que ferramentas de texto simples.
+        </p>
 
-      <h2>Lendo Conteúdo: Get-Content</h2>
-      <p>
-        O <code>Get-Content</code> (aliases <code>cat</code>, <code>type</code>, <code>gc</code>) é o comando principal para ler arquivos. Por padrão, ele retorna um array de strings, onde cada elemento é uma linha do arquivo.
-      </p>
+        <h2>Lendo Conteúdo com Get-Content</h2>
+        <CodeBlock title="Diferentes formas de ler arquivos" code={`# Ler arquivo inteiro (retorna array de strings — uma por linha)
+  $linhas = Get-Content "C:\\Logs\\app.log"
+  $linhas.Count        # Número de linhas
+  $linhas[0]          # Primeira linha
+  $linhas[-1]         # Última linha
 
-      <CodeBlock
-        title="Diferentes formas de ler arquivos"
-        code={`# Lê o arquivo inteiro e exibe no console
-Get-Content -Path ".\\servidores.txt"
+  # Apenas as primeiras / últimas N linhas
+  Get-Content "app.log" -TotalCount 10   # Primeiras 10 (como head)
+  Get-Content "app.log" -Tail 50         # Últimas 50 (como tail)
 
-# Lê apenas as primeiras 10 linhas
-Get-Content -Path ".\\logs.txt" -TotalCount 10
+  # Leitura como string única (para regex multilinhas)
+  $conteudo = Get-Content "config.json" -Raw
+  $conteudo -match '"porta":\s*(\d+)'  # True
+  $Matches[1]  # Porta encontrada
 
-# Lê as últimas 5 linhas (equivalente ao 'tail' do Linux)
-Get-Content -Path ".\\logs.txt" -Tail 5
+  # Monitorar arquivo em tempo real (tail -f)
+  Get-Content "app.log" -Wait -Tail 0  # Aguarda e mostra novos conteúdos
 
-# Lê o arquivo como uma única string gigante (útil para Regex multilinhas)
-$conteudoCompleto = Get-Content -Path ".\\config.json" -Raw
+  # Alta performance com arquivo grande (streaming .NET — não carrega tudo em memória)
+  $reader = [System.IO.File]::OpenText("C:\\Logs\\enorme.log")
+  while (-not $reader.EndOfStream) {
+      $linha = $reader.ReadLine()
+      if ($linha -match "ERROR") { Write-Host $linha }
+  }
+  $reader.Close()
+  `} />
 
-# Monitora um arquivo de log em tempo real (equivalente ao 'tail -f')
-Get-Content -Path ".\\app.log" -Wait
-`}
-      />
+        <h2>Escrevendo Conteúdo</h2>
+        <CodeBlock title="Set-Content, Add-Content e Out-File" code={`# Set-Content — sobrescreve o arquivo (ou cria se não existir)
+  Set-Content -Path "saida.txt" -Value "Linha inicial"
+  Set-Content -Path "saida.txt" -Value @("Linha 1","Linha 2","Linha 3")
 
-      <AlertBox type="info" title="Performance com Arquivos Grandes">
-        Para arquivos extremamente grandes (GBs), <code>Get-Content</code> pode ser lento pois ele processa objetos. Nesses casos, usar a classe .NET <code>[System.IO.File]::ReadLines($path)</code> é muito mais eficiente em memória.
-      </AlertBox>
+  # Add-Content — adiciona ao final
+  Add-Content -Path "log.txt" -Value "$(Get-Date) — Backup concluído"
+  Add-Content -Path "log.txt" -Value "" # Linha em branco
 
-      <h2>Escrevendo Conteúdo: Set-Content e Add-Content</h2>
-      <p>
-        Temos dois cmdlets principais para escrita: <code>Set-Content</code> (sobrescreve) e <code>Add-Content</code> (adiciona ao final).
-      </p>
+  # Limpar conteúdo sem apagar o arquivo
+  Clear-Content "temporario.log"
 
-      <CodeBlock
-        title="Escrita e anexação de dados"
-        code={`# Sobrescreve o conteúdo do arquivo (ou cria se não existir)
-Set-Content -Path ".\\notas.txt" -Value "Esta é a primeira linha."
+  # Out-File — redireciona saída de comandos para arquivo
+  Get-Process | Format-Table | Out-File "processos.txt"
+  Get-Process | Format-Table | Out-File "processos.txt" -Append  # Adicionar sem apagar
 
-# Adiciona uma nova linha ao final do arquivo existente
-Add-Content -Path ".\\notas.txt" -Value "Esta é uma linha adicional."
+  # Set-Content vs Out-File:
+  # Set-Content converte para string preservando propriedades
+  # Out-File formata como seria exibido no console
+  # Para dados estruturados (CSV, JSON) prefira Export-Csv / ConvertTo-Json | Set-Content
 
-# Escrevendo múltiplas linhas de uma vez
-$linhas = "Linha 1", "Linha 2", "Linha 3"
-Set-Content -Path ".\\lista.txt" -Value $linhas
+  # Redirecionamento de saída (operadores)
+  Get-Process > "processos.txt"     # Sobrescrever
+  Get-Process >> "processos.txt"    # Acrescentar
+  Get-Error  2> "erros.txt"        # Redirecionar erros
+  `} />
 
-# Limpando o conteúdo de um arquivo sem deletá-lo
-Clear-Content -Path ".\\temporario.log"
-`}
-      />
+        <h2>Codificação de Caracteres</h2>
+        <CodeBlock title="Trabalhando com diferentes encodings" code={`# Especificar encoding ao ler
+  Get-Content "arquivo.csv" -Encoding UTF8
+  Get-Content "arquivo_windows.txt" -Encoding Latin1  # ANSI/Windows-1252
 
-      <h2>Codificação de Caracteres (Encodings)</h2>
-      <p>
-        Problemas com acentuação são comuns ao lidar com arquivos. O parâmetro <code>-Encoding</code> permite especificar como o PowerShell deve interpretar ou gravar os bytes.
-      </p>
+  # Especificar encoding ao escrever
+  Set-Content "script.ps1" -Value "# Comentário com acentuação" -Encoding UTF8
+  Set-Content "legado.txt"  -Value "Texto"               -Encoding Default  # ANSI no PS5.1
 
-      <CodeBlock
-        title="Trabalhando com diferentes encodings"
-        code={`# Salvando em UTF-8 (Recomendado para modernidade e Linux)
-Set-Content -Path "script.ps1" -Value "# Comentário com acentuação" -Encoding UTF8
+  # Detectar encoding de um arquivo
+  $bytes = [System.IO.File]::ReadAllBytes("arquivo.txt")
+  if ($bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE) { "UTF-16 LE" }
+  elseif ($bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { "UTF-8 BOM" }
+  else { "Sem BOM (provavelmente UTF-8 ou ANSI)" }
 
-# Lendo um arquivo em formato Unicode (UTF-16)
-Get-Content -Path "arquivo_antigo.txt" -Encoding Unicode
+  # Converter encoding de arquivo
+  $conteudo = Get-Content "arquivo-ansi.txt" -Encoding Default
+  Set-Content "arquivo-utf8.txt" -Value $conteudo -Encoding UTF8
 
-# Opções comuns: ASCII, UTF8, Unicode, BigEndianUnicode, UTF32
-`}
-      />
+  # PS7: encoding padrão é UTF-8 sem BOM — mais compatível com Linux
+  # PS5.1: encoding padrão é UTF-16 para Set-Content e ANSI para Out-File
+  `} />
 
-      <AlertBox type="warning" title="UTF-8 vs UTF8NoBOM">
-        No Windows PowerShell 5.1, o padrão é <code>UTF-16</code>. No PowerShell 7+, o padrão é <code>UTF-8</code> sem BOM. Ao criar scripts que devem rodar em múltiplos sistemas, especifique explicitamente o encoding.
-      </AlertBox>
+        <AlertBox type="warning" title="UTF-8 com e sem BOM">
+          No Windows PowerShell 5.1 o padrão é UTF-16. No PowerShell 7+ é UTF-8 sem BOM.
+          Scripts e arquivos de config criados no PS5.1 com acentos podem ter problemas ao
+          serem abertos no PS7. Sempre especifique <code>-Encoding UTF8</code> explicitamente.
+        </AlertBox>
 
-      <h2>Processamento de Conteúdo via Pipeline</h2>
-      <p>
-        A verdadeira força surge ao combinar <code>Get-Content</code> com filtros como <code>Where-Object</code> ou <code>Select-String</code>.
-      </p>
+        <h2>Processamento via Pipeline</h2>
+        <CodeBlock title="Filtragem, substituição e transformação de linhas" code={`# Filtrar linhas que contêm uma palavra
+  Get-Content "app.log" | Where-Object { $_ -match "ERROR|FATAL" }
 
-      <CodeBlock
-        title="Filtragem de conteúdo avançada"
-        code={`# Busca por uma palavra específica dentro de um arquivo (tipo grep)
-Get-Content ".\\logs.txt" | Select-String "Error"
+  # Select-String — busca como grep (retorna objetos MatchInfo)
+  Get-Content "app.log" | Select-String "Exception"
 
-# Conta quantas vezes a palavra "Sucesso" aparece
-(Get-Content ".\\resultado.txt" | Select-String "Sucesso").Count
+  # Com contexto (linhas antes/depois)
+  Get-Content "app.log" | Select-String "OutOfMemory" -Context 3,5
 
-# Substituindo texto dentro de um arquivo e salvando o resultado
-(Get-Content ".\\config.ini") -replace 'localhost', '10.0.0.5' | Set-Content ".\\config.ini"
-`}
-      />
+  # Substituição em arquivo inteiro
+  (Get-Content "config.ini") -replace 'localhost', '10.0.0.5' |
+      Set-Content "config.ini"
 
-      <h2>Trabalhando com Formatos Estruturados (JSON, CSV, XML)</h2>
-      <p>
-        Muitas vezes o conteúdo não é apenas texto simples, mas dados estruturados.
-      </p>
+  # Substituição múltipla
+  $conteudo = Get-Content "template.html" -Raw
+  $conteudo = $conteudo `
+      -replace "{{EMPRESA}}",  "Minha Empresa Ltda" `
+      -replace "{{TELEFONE}}", "(11) 9999-8888" `
+      -replace "{{DATA}}",     (Get-Date -Format "dd/MM/yyyy")
+  Set-Content "pagina.html" -Value $conteudo -Encoding UTF8
 
-      <CodeBlock
-        title="Lendo arquivos JSON e CSV"
-        code={`# Lendo um JSON e convertendo para um objeto manipulável
-$config = Get-Content ".\\settings.json" | ConvertFrom-Json
-$config.Database.Server = "NovoServidor"
-$config | ConvertTo-Json | Set-Content ".\\settings.json"
+  # Processar arquivo de log grande linha por linha
+  $erros = 0; $avisos = 0
+  Get-Content "server.log" | ForEach-Object {
+      if ($_ -match "ERROR") { $erros++ }
+      if ($_ -match "WARN")  { $avisos++ }
+  }
+  "Erros: $erros | Avisos: $avisos"
+  `} />
 
-# Lendo um CSV como se fosse um banco de dados
-$usuarios = Import-Csv -Path ".\\usuarios.csv" -Delimiter ";"
-foreach ($u in $usuarios) {
-    Write-Host "Processando usuário: $($u.Nome)"
-}
-`}
-      />
+        <h2>Formatos Estruturados: JSON, CSV e XML</h2>
+        <CodeBlock title="Ler e escrever dados estruturados" code={`# JSON — ler, modificar e salvar
+  $config = Get-Content "appsettings.json" -Raw | ConvertFrom-Json
+  $config.ConnectionStrings.Default = "Server=SRV01;Database=Prod;Trusted_Connection=True"
+  $config | ConvertTo-Json -Depth 10 | Set-Content "appsettings.json" -Encoding UTF8
 
-      <h2>Diferença: Out-File vs Set-Content</h2>
-      <p>
-        Embora pareçam iguais, <code>Out-File</code> (e o operador <code>&gt;</code>) e <code>Set-Content</code> funcionam de forma diferente:
-      </p>
-      <ul>
-        <li><strong>Set-Content:</strong> Projetado especificamente para strings. É mais rápido para texto simples.</li>
-        <li><strong>Out-File:</strong> Tenta renderizar o objeto como ele aparece no console. É melhor para capturar a saída formatada de outros comandos.</li>
-      </ul>
+  # CSV — pipeline completo
+  $usuarios = Import-Csv "usuarios.csv" -Delimiter ";" -Encoding UTF8
+  $usuarios |
+      Where-Object { $_.Departamento -eq "TI" } |
+      Select-Object Nome, Email, @{N="Ativo"; E={ $_.Status -eq "1" ? "Sim" : "Não" }} |
+      Export-Csv "ti-usuarios.csv" -NoTypeInformation -Encoding UTF8 -Delimiter ";"
 
-      <CodeBlock
-        title="Exemplo comparativo"
-        code={`# Out-File captura a formatação de tabela (não recomendado para processamento posterior)
-Get-Process | Out-File ".\\processos.txt"
+  # Adicionar coluna calculada ao CSV
+  Import-Csv "funcionarios.csv" |
+      Select-Object *, @{N="NomeCompleto"; E={ "$($_.Primeiro) $($_.Sobrenome)" }} |
+      Export-Csv "funcionarios-atualizado.csv" -NoTypeInformation
 
-# Set-Content é usado para dados puros
-$dados = "Valor 1", "Valor 2"
-$dados | Set-Content ".\\dados.txt"
-`}
-      />
-    </PageContainer>
-  );
-}
+  # XML — leitura de arquivo de configuração
+  [xml]$xml = Get-Content "config.xml"
+  $xml.Configuration.Database.Server  # Navegar pelo XML como objeto
+  $xml.Configuration.Database.Server = "NovoServidor"
+  $xml.Save("C:\\config.xml")   # Save() requer caminho absoluto
+
+  # Arquivo INI simples — leitura manual
+  $ini = @{}
+  Get-Content "config.ini" | ForEach-Object {
+      if ($_ -match "^(\w+)=(.+)$") {
+          $ini[$Matches[1]] = $Matches[2].Trim()
+      }
+  }
+  $ini.Servidor  # Valor da chave "Servidor" no INI
+  `} />
+
+        <h2>Manipulação de Arquivos Binários</h2>
+        <CodeBlock title="Lendo e escrevendo dados binários" code={`# Ler arquivo binário como bytes
+  $bytes = [System.IO.File]::ReadAllBytes("C:\\arquivo.bin")
+  $bytes.Length   # Tamanho em bytes
+
+  # Verificar magic bytes (identificar tipo de arquivo)
+  $header = $bytes[0..3]
+  $hex = $header | ForEach-Object { $_.ToString("X2") }
+  switch ($hex -join "") {
+      "25504446" { "PDF" }
+      "504B0304" { "ZIP / Office (xlsx, docx)" }
+      "FFD8FFE0" { "JPEG" }
+      "89504E47" { "PNG" }
+      default     { "Desconhecido: $($hex -join ' ')" }
+  }
+
+  # Escrever bytes em arquivo
+  $dados = [byte[]](0x48, 0x65, 0x6C, 0x6C, 0x6F)  # "Hello" em ASCII
+  [System.IO.File]::WriteAllBytes("C:\\saida.bin", $dados)
+
+  # Copiar parte de arquivo (fatia de bytes)
+  $parteBytes = $bytes[100..199]  # Bytes 100 a 199
+  [System.IO.File]::WriteAllBytes("C:\\parte.bin", $parteBytes)
+
+  # Base64 encode/decode (útil para transferência de binários)
+  $base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("imagem.png"))
+  $decoded = [Convert]::FromBase64String($base64)
+  [IO.File]::WriteAllBytes("imagem-restaurada.png", $decoded)
+  `} />
+
+        <AlertBox type="info" title="Performance: Get-Content vs System.IO.File">
+          <code>Get-Content</code> é conveniente mas carrega o arquivo inteiro em memória como array.
+          Para arquivos grandes use <code>[System.IO.File]::ReadLines()</code> que faz streaming
+          linha por linha sem consumir toda a RAM. Para binários, sempre use
+          <code>[System.IO.File]::ReadAllBytes()</code>.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
