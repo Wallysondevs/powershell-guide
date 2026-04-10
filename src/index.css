@@ -88,7 +88,7 @@
     @apply font-mono text-sm bg-muted px-1.5 py-0.5 rounded text-primary;
   }
 
-  ul { @apply list-disc list-inside space-y-2 mb-6 text-muted-foreground; }
+  ul { @apply list-disc pl-6 space-y-2 mb-6 text-muted-foreground; }
   li { @apply leading-relaxed; }
 }
 
