@@ -1,132 +1,211 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function Pacotes() {
-  return (
-    <PageContainer
-      title="Gerenciamento de Pacotes"
-      subtitle="Instale e atualize softwares e módulos de forma automatizada com WinGet, Chocolatey e PowerShellGet."
-      difficulty="iniciante"
-      timeToRead="15 min"
-    >
-      <p>
-        Gerenciar software manualmente através de downloads e instaladores ".exe" é coisa do passado. O PowerShell oferece ferramentas poderosas para gerenciar o ciclo de vida de aplicativos e bibliotecas diretamente pela linha de comando.
-      </p>
+  export default function Pacotes() {
+    return (
+      <PageContainer
+        title="Gerenciamento de Pacotes"
+        subtitle="WinGet, Chocolatey, Scoop, PowerShellGet e automatização de ambientes com scripts."
+        difficulty="iniciante"
+        timeToRead="25 min"
+      >
+        <p>
+          Gerenciar software manualmente através de downloads e instaladores ".exe" é coisa do passado.
+          O PowerShell integra-se com múltiplos gerenciadores de pacotes para instalar, atualizar
+          e remover software de forma reproduzível e automatizável — em minutos, não horas.
+        </p>
 
-      <h2>WinGet (Windows Package Manager)</h2>
-      <p>
-        O WinGet é o gerenciador de pacotes oficial da Microsoft, incluído nativamente no Windows 10 e 11. Ele é ideal para instalar aplicativos desktop (VSCode, Chrome, Spotify, etc).
-      </p>
+        <h2>WinGet — Gerenciador Oficial da Microsoft</h2>
+        <CodeBlock title="Instalando e gerenciando aplicativos com WinGet" code={`# Buscar aplicativos pelo nome
+  winget search "Visual Studio Code"
+  winget search --id "Microsoft.PowerShell"  # Busca exata por ID
 
-      <CodeBlock
-        title="Usando WinGet"
-        code={`# Procurar um aplicativo
-winget search "Visual Studio Code"
+  # Instalar aplicativos (sem interação do usuário)
+  winget install "Microsoft.VisualStudioCode" --silent
+  winget install "Git.Git" --silent --accept-package-agreements --accept-source-agreements
+  winget install "Docker.DockerDesktop" -e  # -e para match exato do ID
 
-# Instalar um aplicativo (usando o ID para precisão)
-winget install Microsoft.VisualStudioCode
+  # Listar softwares instalados
+  winget list
+  winget list | Where-Object { $_ -match "2024" }  # Filtrar por texto
 
-# Listar todos os softwares instalados no PC
-winget list
+  # Verificar e instalar atualizações
+  winget upgrade                    # Ver o que está desatualizado
+  winget upgrade --all --silent    # Atualizar tudo
 
-# Atualizar todos os aplicativos instalados que possuem nova versão
-winget upgrade --all
+  # Desinstalar
+  winget uninstall "Microsoft.VisualStudioCode"
 
-# Remover um aplicativo
-winget uninstall Microsoft.VisualStudioCode`}
-      />
+  # Export/Import para backup de lista de apps
+  winget export --output "C:\\Backup\\apps.json"           # Exportar lista
+  winget import --import-file "C:\\Backup\\apps.json" --no-upgrade  # Restaurar tudo
 
-      <AlertBox type="info" title="WinGet Export/Import">
-        Você pode exportar a lista de todos os seus aplicativos instalados para um arquivo JSON usando <code>winget export -o lista.json</code> e depois usá-lo para instalar tudo de novo em outro PC com <code>winget import -i lista.json</code>.
-      </AlertBox>
+  # Instalar via PowerShell (capturar saída)
+  $resultado = winget install "Notepad++.Notepad++" --silent 2>&1
+  if ($LASTEXITCODE -eq 0) {
+      Write-Host "Instalado com sucesso!" -ForegroundColor Green
+  } else {
+      Write-Warning "Falha na instalação: $resultado"
+  }
+  `} />
 
-      <h2>Chocolatey</h2>
-      <p>
-        O Chocolatey é o gerenciador de pacotes da comunidade mais popular para Windows. Ele possui um repositório vasto e é muito utilizado em ambientes corporativos e scripts de automação.
-      </p>
+        <h2>Chocolatey — O Gerenciador Corporativo</h2>
+        <CodeBlock title="Instalação e uso do Chocolatey" code={`# Instalar o Chocolatey (admin)
+  Set-ExecutionPolicy Bypass -Scope Process -Force
+  [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+  Invoke-Expression ((New-Object Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-      <CodeBlock
-        title="Usando Chocolatey (choco)"
-        code={`# Instalar o Chocolatey (via PowerShell admin)
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+  # Verificar instalação
+  choco --version
 
-# Instalar pacotes
-choco install git nodejs docker-desktop -y
+  # Instalar pacotes
+  choco install git nodejs-lts vscode googlechrome -y  # -y para aceitar tudo
 
-# Verificar atualizações pendentes
-choco outdated
+  # Instalar versão específica
+  choco install nodejs-lts --version=18.20.0 -y
 
-# Atualizar tudo
-choco upgrade all -y`}
-      />
+  # Verificar atualizações pendentes
+  choco outdated
 
-      <h2>PowerShellGet (Módulos)</h2>
-      <p>
-        Para gerenciar as bibliotecas e extensões do próprio PowerShell, usamos o módulo <code>PowerShellGet</code>. Ele interage principalmente com a <strong>PowerShell Gallery</strong>.
-      </p>
+  # Atualizar pacotes
+  choco upgrade git -y
+  choco upgrade all -y   # Atualizar tudo (cuidado!)
 
-      <CodeBlock
-        title="Gerenciando Módulos do PowerShell"
-        code={`# Procurar módulos
-Find-Module -Name "SqlServer"
+  # Informações de um pacote
+  choco info vscode
 
-# Instalar um módulo para o usuário atual
-Install-Module -Name PSReadLine -Scope CurrentUser -Force
+  # Remover
+  choco uninstall googlechrome -y
 
-# Ver o que está instalado via PowerShellGet
-Get-InstalledModule
+  # Criar pacote local da empresa (empresa chocolatey server)
+  choco pack "C:\\MeuPacote\\meuapp.nuspec"
+  choco push "meuapp.1.0.0.nupkg" --source "https://choco.empresa.com/api/v2/package"
+  `} />
 
-# Desinstalar um módulo
-Uninstall-Module -Name NomeDoModulo`}
-      />
+        <h2>Scoop — Para Desenvolvedores</h2>
+        <CodeBlock title="Instalações portáteis e sem admin" code={`# Instalar Scoop (sem permissão de admin)
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
 
-      <h2>NuGet e Outros Provedores</h2>
-      <p>
-        O PowerShell usa o framework <code>PackageManagement</code> (também conhecido como OneGet) para unificar diferentes gerenciadores sob comandos comuns.
-      </p>
+  # Adicionar buckets (repositórios de pacotes)
+  scoop bucket add extras     # Apps extras
+  scoop bucket add java       # JDKs
+  scoop bucket add games      # Jogos
+  scoop bucket add nerd-fonts # Fontes para dev
 
-      <CodeBlock
-        title="Comandos unificados"
-        code={`# Listar provedores de pacotes disponíveis (NuGet, Chocolatey, WinGet, msi, etc)
-Get-PackageProvider
+  # Instalar ferramentas de desenvolvimento
+  scoop install git curl wget jq
+  scoop install python nodejs
+  scoop install vscode         # Do bucket extras
 
-# Instalar o provedor NuGet (necessário para a maioria dos módulos)
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  # Instalar fontes para terminal
+  scoop install nerd-fonts/CascadiaCode-NF   # Para icons no terminal
 
-# Buscar um pacote em qualquer provedor
-Find-Package -Name "Python"`}
-      />
+  # Manter atualizado
+  scoop update      # Atualizar Scoop e buckets
+  scoop update *    # Atualizar todos os apps
 
-      <AlertBox type="warning" title="Escopo de Instalação">
-        Ao usar <code>Install-Module</code> ou <code>Install-Package</code>, se você não tiver privilégios de Administrador, sempre use o parâmetro <code>-Scope CurrentUser</code>.
-      </AlertBox>
+  # Vantagem: instalações portáteis em $env:USERPROFILE\\scoop
+  # Fácil limpeza: scoop cleanup * (remove versões antigas)
+  scoop cleanup *   # Liberar espaço de versões antigas
+  scoop cache rm *  # Limpar cache de downloads
+  `} />
 
-      <h2>Automação de Ambiente (Setup Script)</h2>
-      <p>
-        Um dos maiores benefícios desses gerenciadores é criar um script que configura toda a sua máquina de trabalho em minutos.
-      </p>
+        <h2>PowerShellGet — Módulos do PowerShell</h2>
+        <CodeBlock title="Gerenciando módulos e scripts PS" code={`# Instalar módulo da PSGallery
+  Find-Module "ImportExcel"  # Pesquisar
+  Install-Module "ImportExcel" -Scope CurrentUser -Force
 
-      <CodeBlock
-        title="Exemplo de script de setup"
-        code={`# Script de Setup Rápido
-Write-Host "Iniciando instalação de ferramentas dev..." -ForegroundColor Cyan
+  # Instalar múltiplos de uma vez
+  @("Pester","PSScriptAnalyzer","ImportExcel","PSReadLine") |
+      ForEach-Object {
+          Install-Module $_ -Scope CurrentUser -Force -AllowClobber -ErrorAction SilentlyContinue
+          Write-Host "Instalado: $_" -ForegroundColor Green
+      }
 
-# Instalação via WinGet
-winget install Microsoft.WindowsTerminal
-winget install Git.Git
-winget install Docker.DockerDesktop
+  # Ver módulos instalados
+  Get-InstalledModule | Select-Object Name, Version, InstalledDate | Sort-Object InstalledDate -Descending
 
-# Instalação de módulos PS
-Install-Module -Name oh-my-posh -Scope CurrentUser -Force
-Install-Module -Name Terminal-Icons -Scope CurrentUser -Force
+  # Atualizar todos os módulos instalados via PowerShellGet
+  Get-InstalledModule | Update-Module -Force
 
-Write-Host "Ambiente configurado com sucesso!" -ForegroundColor Green`}
-      />
+  # Desinstalar módulo e todas as suas versões
+  Uninstall-Module -Name "AzureRM" -AllVersions -Force
 
-      <AlertBox type="success" title="Dica: Scoop">
-        Para desenvolvedores que preferem instalações que não exigem privilégios de Admin e não "sujam" o registro do Windows, vale a pena conhecer o <strong>Scoop</strong> (scoop.sh), outro gerenciador focado em ferramentas portáteis.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+  # Instalar script da PSGallery
+  Find-Script "Get-NetworkSummary"
+  Install-Script "Get-NetworkSummary" -Scope CurrentUser
+
+  # Provedor NuGet — necessário para muitas operações
+  Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  `} />
+
+        <h2>Automação de Ambiente — Setup Script Completo</h2>
+        <CodeBlock title="Script para configurar máquina do zero" code={`#Requires -RunAsAdministrator
+  <#
+  .SYNOPSIS
+      Setup completo de máquina de desenvolvimento
+  .DESCRIPTION
+      Instala ferramentas de desenvolvimento, configura o terminal e módulos PS
+  #>
+
+  param(
+      [switch]$SomenteModulosPS,
+      [switch]$SomenteApps,
+      [switch]$VerboseOutput
+  )
+
+  function Write-Status {
+      param([string]$Msg, [string]$Cor = "Cyan")
+      Write-Host "  ▶ $Msg" -ForegroundColor $Cor
+  }
+
+  Write-Host "=== Setup de Ambiente Dev ===" -ForegroundColor Magenta
+
+  # --- APLICATIVOS VIA WINGET ---
+  if (-not $SomenteModulosPS) {
+      Write-Host "Instalando aplicativos..." -ForegroundColor Yellow
+      $apps = @(
+          "Microsoft.WindowsTerminal",
+          "Microsoft.PowerShell",
+          "Git.Git",
+          "Microsoft.VisualStudioCode",
+          "Docker.DockerDesktop",
+          "Postman.Postman",
+          "dbeaver.dbeaver"
+      )
+      foreach ($app in $apps) {
+          Write-Status $app
+          winget install $app --silent --accept-package-agreements --accept-source-agreements 2>$null
+      }
+  }
+
+  # --- MÓDULOS POWERSHELL ---
+  if (-not $SomenteApps) {
+      Write-Host "Instalando módulos PowerShell..." -ForegroundColor Yellow
+      $modulos = @("PSReadLine","Terminal-Icons","posh-git","Pester","PSScriptAnalyzer","ImportExcel")
+      foreach ($mod in $modulos) {
+          Write-Status $mod
+          Install-Module $mod -Scope CurrentUser -Force -AllowClobber -ErrorAction SilentlyContinue
+      }
+  }
+
+  Write-Host "Setup concluído! Reinicie o terminal." -ForegroundColor Green
+  `} />
+
+        <AlertBox type="info" title="WinGet Export/Import">
+          Use <code>winget export -o apps.json</code> para fazer backup de todos os aplicativos
+          instalados e <code>winget import -i apps.json</code> para restaurar tudo em um
+          novo PC. Ideal para migração de máquina ou onboarding de novos colaboradores.
+        </AlertBox>
+
+        <AlertBox type="warning" title="Escopo de Instalação">
+          Sempre use <code>-Scope CurrentUser</code> no <code>Install-Module</code> quando
+          não tiver privilégios de Administrador. Sem esse parâmetro, o PowerShell tenta
+          instalar para todos os usuários e falha com erro de permissão.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
