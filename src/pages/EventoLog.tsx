@@ -1,145 +1,197 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function EventoLog() {
-  return (
-    <PageContainer
-      title="Windows Event Log"
-      subtitle="Leia, filtre, crie e gerencie logs de eventos do Windows para monitoramento e auditoria."
-      difficulty="intermediário"
-      timeToRead="20 min"
-    >
-      <p>
-        O Windows Event Log é a principal fonte de informações de auditoria e diagnóstico 
-        do sistema operacional. O PowerShell oferece dois cmdlets principais: 
-        <code>Get-EventLog</code> (legado) e <code>Get-WinEvent</code> (moderno, recomendado).
-      </p>
+  export default function EventoLog() {
+    return (
+      <PageContainer
+        title="Windows Event Log"
+        subtitle="Leia, filtre, crie e gerencie logs de eventos do Windows para monitoramento e auditoria."
+        difficulty="intermediário"
+        timeToRead="28 min"
+      >
+        <p>
+          O Windows Event Log é a principal fonte de informação sobre o que acontece no sistema.
+          PowerShell oferece dois cmdlets: o moderno <code>Get-WinEvent</code> (rápido, com XPath e XML)
+          e o legado <code>Get-EventLog</code> — além de suporte para criar eventos personalizados e
+          exportar logs para auditoria.
+        </p>
 
-      <h2>Consultando Eventos</h2>
-      <CodeBlock title="Get-WinEvent - consultas flexíveis" code={`# Listar todos os logs disponíveis
-Get-WinEvent -ListLog * | Where-Object RecordCount -gt 0 | Sort-Object RecordCount -Descending | Select-Object -First 20
+        <h2>Consultando Eventos com Get-WinEvent</h2>
+        <CodeBlock title="Filtrando e inspecionando logs de eventos" code={`# Logs disponíveis no sistema
+  Get-WinEvent -ListLog * | Select-Object LogName, RecordCount, LogMode, IsEnabled |
+      Sort-Object RecordCount -Descending | Select-Object -First 20
 
-# Eventos de um log específico
-Get-WinEvent -LogName "System" -MaxEvents 50
-Get-WinEvent -LogName "Application" -MaxEvents 100 | Where-Object LevelDisplayName -eq "Error"
+  # Ler eventos de um log específico (mais recentes primeiro)
+  Get-WinEvent -LogName "System" -MaxEvents 50 |
+      Select-Object TimeCreated, Id, ProviderName, LevelDisplayName, Message |
+      Format-Table -AutoSize
 
-# Filtrar por tempo
-Get-WinEvent -LogName "Security" -MaxEvents 1000 |
-    Where-Object { $_.TimeCreated -gt (Get-Date).AddHours(-1) }
+  # Filtrar por data e nível (1=Crítico, 2=Erro, 3=Aviso, 4=Info, 5=Verbose)
+  Get-WinEvent -FilterHashtable @{
+      LogName   = "System"
+      Level     = 1,2           # Crítico e Erro
+      StartTime = (Get-Date).AddDays(-7)
+      EndTime   = Get-Date
+  } | Select-Object TimeCreated, Id, ProviderName, Message | Format-Table -Wrap
 
-# FilterHashtable (muito mais eficiente — filtra no servidor)
-Get-WinEvent -FilterHashtable @{
-    LogName   = "System"
-    Level     = 2          # 1=Critical,2=Error,3=Warning,4=Info
-    StartTime = (Get-Date).AddDays(-7)
-    EndTime   = Get-Date
-}
+  # Buscar por Event ID
+  Get-WinEvent -FilterHashtable @{ LogName = "System"; Id = 41 }  # Unexpected shutdown
 
-# Filtrar por ID de evento
-Get-WinEvent -FilterHashtable @{
-    LogName = "Security"
-    Id      = 4624         # Logon bem-sucedido
-}
+  # Buscar em múltiplos logs ao mesmo tempo
+  Get-WinEvent -FilterHashtable @{
+      LogName = "System","Application","Security"
+      Level   = 2
+  } -MaxEvents 100
 
-# Múltiplos IDs
-Get-WinEvent -FilterHashtable @{
-    LogName = "Security"
-    Id      = @(4624, 4625, 4648)  # Logon, Falha, Tentativa
-}
-`} />
+  # Busca por texto na mensagem (usando Where-Object)
+  Get-WinEvent -LogName "Application" -MaxEvents 500 |
+      Where-Object Message -like "*OutOfMemory*" |
+      Select-Object TimeCreated, Id, Message
+  `} />
 
-      <h2>Análise de Falhas de Login</h2>
-      <CodeBlock title="Auditoria de segurança com eventos" code={`# Tentativas de login falhadas (4625)
-$falhas = Get-WinEvent -FilterHashtable @{
-    LogName   = "Security"
-    Id        = 4625
-    StartTime = (Get-Date).AddHours(-24)
-} | ForEach-Object {
-    $xml = [xml]$_.ToXml()
-    $ns  = @{ e = "http://schemas.microsoft.com/win/2004/08/events/event" }
-    [PSCustomObject]@{
-        Hora       = $_.TimeCreated
-        Usuario    = ($xml | Select-Xml "//e:Data[@Name='TargetUserName']" -Namespace $ns).Node.InnerText
-        Origem     = ($xml | Select-Xml "//e:Data[@Name='IpAddress']" -Namespace $ns).Node.InnerText
-        Workstation= ($xml | Select-Xml "//e:Data[@Name='WorkstationName']" -Namespace $ns).Node.InnerText
-    }
-}
+        <h2>XPath e Filtros Avançados</h2>
+        <CodeBlock title="Consultas XPath para filtragem precisa e rápida" code={`# XPath é muito mais rápido que Where-Object para grandes logs
+  # Eventos de erro das últimas 24 horas
+  $ontem = [System.DateTime]::UtcNow.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ss.000Z")
+  $xPath = "*[System[Level=2 and TimeCreated[@SystemTime>='$ontem']]]"
+  Get-WinEvent -LogName "System" -FilterXPath $xPath
 
-# IPs com mais tentativas falhas
-$falhas | Group-Object Origem | Sort-Object Count -Descending |
-    Select-Object -First 10 |
-    Format-Table @{N="IP Origem";E={$_.Name}}, Count -AutoSize
+  # XPath com múltiplos EventIDs (falha de logon = 4625, logon = 4624)
+  Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4625 or EventID=4624]]" -MaxEvents 100
 
-# Criar alerta se >10 falhas em 5 minutos
-$limite = (Get-Date).AddMinutes(-5)
-$falhasRecentes = $falhas | Where-Object { $_.Hora -gt $limite }
-if ($falhasRecentes.Count -gt 10) {
-    Write-Warning "ALERTA: $($falhasRecentes.Count) tentativas falhas nos últimos 5 minutos!"
-    # Enviar e-mail ou criar ticket...
-}
-`} />
+  # Filtrar por provedor E EventID
+  Get-WinEvent -LogName "System" `
+    -FilterXPath "*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and EventID=41]]"
 
-      <h2>Criando Eventos Personalizados</h2>
-      <CodeBlock title="Write-EventLog e New-EventLog" code={`# Criar fonte personalizada (uma vez, como Administrador)
-New-EventLog -LogName "Application" -Source "MinhaAplicacao"
+  # Filtrar por dado dentro do evento (XML)
+  # Ex: logons de um usuário específico
+  $usuario = "administrator"
+  $xPath = "*[System[EventID=4624] and EventData[Data[@Name='TargetUserName']='$usuario']]"
+  Get-WinEvent -LogName "Security" -FilterXPath $xPath -MaxEvents 50 |
+      ForEach-Object {
+          $xml = [xml]$_.ToXml()
+          [PSCustomObject]@{
+              Hora      = $_.TimeCreated
+              Usuário   = ($xml.Event.EventData.Data | Where-Object Name -eq "TargetUserName")."#text"
+              IP        = ($xml.Event.EventData.Data | Where-Object Name -eq "IpAddress")."#text"
+              TipoLogon = ($xml.Event.EventData.Data | Where-Object Name -eq "LogonType")."#text"
+          }
+      } | Format-Table
+  `} />
 
-# Escrever eventos — parâmetros na mesma linha
-Write-EventLog -LogName "Application" -Source "MinhaAplicacao" -EventId 1000 -EntryType Information -Message "Backup iniciado"
+        <h2>Análise de Falhas de Login</h2>
+        <CodeBlock title="Detectando ataques de força bruta e logons suspeitos" code={`# Listar falhas de logon nas últimas 24h (EventID 4625)
+  $falhas = Get-WinEvent -FilterHashtable @{
+      LogName   = "Security"
+      Id        = 4625
+      StartTime = (Get-Date).AddHours(-24)
+  } -ErrorAction SilentlyContinue
 
-Write-EventLog -LogName "Application" -Source "MinhaAplicacao" -EventId 2000 -EntryType Error -Message "Falha ao conectar ao banco de dados"
+  $relatorio = $falhas | ForEach-Object {
+      $xml = [xml]$_.ToXml()
+      $dados = $xml.Event.EventData.Data
+      [PSCustomObject]@{
+          Hora     = $_.TimeCreated
+          Usuário  = ($dados | Where-Object Name -eq "TargetUserName")."#text"
+          Domínio  = ($dados | Where-Object Name -eq "TargetDomainName")."#text"
+          IP       = ($dados | Where-Object Name -eq "IpAddress")."#text"
+          Motivo   = ($dados | Where-Object Name -eq "FailureReason")."#text"
+      }
+  }
 
-# Usando hashtable de splatting (mais legível)
-$params = @{
-    LogName   = "Application"
-    Source    = "MinhaAplicacao"
-    EventId   = 3000
-    EntryType = "Warning"
-    Message   = "Disco com menos de 10% livre"
-}
-Write-EventLog @params
+  # Top IPs com mais falhas (possível ataque de força bruta)
+  $relatorio | Group-Object IP |
+      Sort-Object Count -Descending |
+      Select-Object -First 10 |
+      Format-Table Name, Count
 
-# Criar log personalizado separado
-New-EventLog -LogName "MinhaEmpresa-App" -Source "ServicoAgendador"
-Limit-EventLog -LogName "MinhaEmpresa-App" -MaximumSize 50MB -OverflowAction OverwriteOlder
+  # Contas com mais falhas
+  $relatorio | Group-Object Usuário |
+      Sort-Object Count -Descending |
+      Select-Object -First 10 |
+      Format-Table Name, Count
 
-# Remover fonte (limpeza)
-Remove-EventLog -Source "MinhaAplicacao"
-`} />
+  # Alertar se algum IP tiver mais de 50 falhas
+  $ipsSuspeitos = $relatorio | Group-Object IP | Where-Object Count -gt 50
+  if ($ipsSuspeitos) {
+      Write-Warning "IPs suspeitos detectados:"
+      $ipsSuspeitos | Format-Table Name, Count
+  }
+  `} />
 
-      <h2>Exportando e Arquivando Logs</h2>
-      <CodeBlock title="Backup e análise de logs" code={`# Exportar eventos para arquivo .evtx
-wevtutil.exe epl System "C:\Backup\System-$(Get-Date -Format 'yyyyMMdd').evtx"
+        <h2>Criando Eventos Personalizados</h2>
+        <CodeBlock title="Registrando eventos de aplicativos nos logs do Windows" code={`# Registrar uma fonte de evento personalizada (admin - fazer 1x)
+  New-EventLog -Source "MeuScript" -LogName Application
 
-# Ler arquivo .evtx exportado
-Get-WinEvent -Path "C:\Backup\System-20240115.evtx" -MaxEvents 100
+  # Escrever eventos de diferentes níveis
+  Write-EventLog -LogName Application -Source "MeuScript" `
+    -EntryType Information -EventId 1000 `
+    -Message "Backup iniciado às $(Get-Date -Format 'HH:mm:ss')"
 
-# Exportar para CSV para análise
-Get-WinEvent -FilterHashtable @{ LogName="Application"; Level=2 } |
-    Select-Object TimeCreated, Id, ProviderName, Message |
-    Export-Csv "erros-application.csv" -NoTypeInformation -Encoding UTF8
+  Write-EventLog -LogName Application -Source "MeuScript" `
+    -EntryType Warning -EventId 1001 `
+    -Message "Espaço em disco abaixo de 10%: 8.2 GB livres"
 
-# Limpar log (cuidado!)
-Clear-EventLog -LogName "MinhaEmpresa-App"
-wevtutil.exe cl Application  # Alternativa via wevtutil
+  Write-EventLog -LogName Application -Source "MeuScript" `
+    -EntryType Error -EventId 1002 `
+    -Message "Falha ao conectar ao servidor de banco de dados: timeout após 30s"
 
-# Monitorar log em tempo real (como tail -f)
-$subscription = Register-ObjectEvent -InputObject ([System.Diagnostics.EventLog]::new("Application")) \ -EventName "EntryWritten" \ -Action {
-        $entrada = $Event.SourceEventArgs.Entry
-        if ($entrada.EntryType -eq "Error") {
-            Write-Host "[ERRO] $($entrada.Message)" -ForegroundColor Red
-        }
-    }
+  # Alternativa moderna: Write-WinEvent (PS7+, logs estruturados)
+  New-WinEvent -ProviderName Microsoft-Windows-Application-Experience `
+    -Id 500 -Payload @("MeuApp","Iniciado","v2.1.0")
 
-# Para parar o monitoramento
-Unregister-Event -SourceIdentifier $subscription.Name
-`} />
+  # Verificar se a fonte existe antes de criar
+  if (-not [System.Diagnostics.EventLog]::SourceExists("MeuScript")) {
+      New-EventLog -Source "MeuScript" -LogName Application
+  }
 
-      <AlertBox type="info" title="Get-WinEvent vs Get-EventLog">
-        Use <code>Get-WinEvent</code> com <code>-FilterHashtable</code> para consultas eficientes —
-        o filtro é executado no servidor de log, não na memória. <code>Get-EventLog</code> é mais 
-        simples mas mais lento e não suporta todos os logs do Windows moderno.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+  # Remover fonte personalizada
+  Remove-EventLog -Source "MeuScript"
+  `} />
+
+        <h2>Exportando e Arquivando Logs</h2>
+        <CodeBlock title="Exportar, limpar e arquivar logs de eventos" code={`# Exportar log para arquivo .evtx (formato nativo)
+  wevtutil.exe epl System "C:\\Logs\\System-$(Get-Date -Format 'yyyyMMdd').evtx"
+  wevtutil.exe epl Security "C:\\Logs\\Security-$(Get-Date -Format 'yyyyMMdd').evtx"
+
+  # Exportar eventos para CSV (análise em Excel)
+  Get-WinEvent -FilterHashtable @{ LogName="System"; Level=2; StartTime=(Get-Date).AddDays(-30) } |
+      Select-Object TimeCreated, Id, ProviderName, LevelDisplayName, Message |
+      Export-Csv "erros-sistema-30dias.csv" -NoTypeInformation -Encoding UTF8
+
+  # Limpar log (use com cuidado — irreversível sem backup)
+  Clear-EventLog -LogName Application    # Limpa o log Application
+  wevtutil.exe cl System                 # Via wevtutil (mais rápido)
+
+  # Rotação de logs — script de arquivamento automático
+  function Invoke-LogRotation {
+      param([string]$ArquivoDestino = "C:\\LogArchive")
+      $data = Get-Date -Format "yyyyMMdd"
+      New-Item -ItemType Directory -Force "$ArquivoDestino\\$data" | Out-Null
+
+      foreach ($log in @("System","Application","Security")) {
+          $arquivo = "$ArquivoDestino\\$data\\$log.evtx"
+          wevtutil.exe epl $log $arquivo /ow:true  # /ow:true sobrescreve se existir
+          wevtutil.exe cl $log                      # Limpar após exportar
+          Write-Host "Log '$log' arquivado: $arquivo" -ForegroundColor Green
+      }
+  }
+  `} />
+
+        <AlertBox type="warning" title="Permissão para Ler Security Log">
+          O log de Segurança (<code>Security</code>) só pode ser lido por Administradores.
+          Em ambientes corporativos, considere usar soluções SIEM (Microsoft Sentinel,
+          Splunk, Elastic) que coletam esses eventos automaticamente.
+        </AlertBox>
+
+        <AlertBox type="info" title="Get-WinEvent vs Get-EventLog">
+          Prefira sempre <code>Get-WinEvent</code> ao <code>Get-EventLog</code>.
+          O Get-WinEvent suporta logs de aplicativos, logs de diagnóstico, filtros XPath
+          e é significativamente mais rápido. O Get-EventLog é legado e não acessa logs
+          de aplicativos como <code>Microsoft-Windows-PowerShell/Operational</code>.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
