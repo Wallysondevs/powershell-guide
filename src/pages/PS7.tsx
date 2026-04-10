@@ -1,140 +1,224 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
+  import { CodeBlock } from "@/components/ui/CodeBlock";
+  import { AlertBox } from "@/components/ui/AlertBox";
 
-export default function PS7() {
-  return (
-    <PageContainer
-      title="PowerShell 7 — Novidades e Diferenças"
-      subtitle="Tudo o que há de novo no PowerShell 7+ em comparação com o Windows PowerShell 5.1."
-      difficulty="intermediário"
-      timeToRead="25 min"
-    >
-      <p>
-        O PowerShell 7 é uma reescrita cross-platform baseada no .NET 6+,
-        enquanto o Windows PowerShell 5.1 é baseado no .NET Framework e é exclusivo do Windows.
-        Ambos coexistem no sistema e têm características diferentes.
-      </p>
+  export default function PS7() {
+    return (
+      <PageContainer
+        title="PowerShell 7 — Novidades e Diferenças"
+        subtitle="Tudo o que há de novo no PowerShell 7+: operadores, paralelismo, erros, REST e mais."
+        difficulty="intermediário"
+        timeToRead="30 min"
+      >
+        <p>
+          O PowerShell 7 é uma reescrita cross-platform baseada no .NET 6+,
+          enquanto o Windows PowerShell 5.1 usa o .NET Framework e é exclusivo do Windows.
+          Ambos coexistem no sistema. O PS7 traz dezenas de novos recursos, melhor performance
+          e compatibilidade com Linux e macOS.
+        </p>
 
-      <AlertBox type="info" title="Dois PowerShells">
-        <strong>Windows PowerShell (5.1):</strong> <code>powershell.exe</code> — já vem no Windows,
-        não receberá novas features, mas ainda é suportado.
-        <strong>PowerShell 7+:</strong> <code>pwsh.exe</code> — multiplataforma,
-        novas features, instalação separada.
-      </AlertBox>
+        <AlertBox type="info" title="Dois PowerShells">
+          <strong>Windows PowerShell 5.1</strong> — <code>powershell.exe</code>: já incluso no Windows,
+          sem novas features, mas ainda suportado até 2028.
+          <strong>PowerShell 7+</strong> — <code>pwsh.exe</code>: cross-platform, novas features,
+          instalação separada (winget install Microsoft.PowerShell).
+        </AlertBox>
 
-      <h2>Instalação do PowerShell 7</h2>
-      <CodeBlock title="Instalando PS7 no Windows" code={`# Via Winget (recomendado)
-winget install Microsoft.PowerShell
+        <h2>Instalação e Identificação</h2>
+        <CodeBlock title="Instalando e identificando o PS7" code={`# Via Winget (recomendado)
+  winget install Microsoft.PowerShell
 
-# Via script direto da Microsoft
-iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
+  # Via script automático
+  iex "& { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI"
 
-# Verificar versão instalada
-pwsh --version
-$PSVersionTable
+  # Verificar versão
+  pwsh --version          # PowerShell 7.4.1
+  $PSVersionTable         # Tabela completa de versão e plataforma
 
-# Verificar .NET em uso
-[System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription
-# .NET 8.0.1 (PS7) vs .NET Framework 4.x (PS5.1)
-`} />
+  # Detectar versão no código (para scripts compatíveis com PS5 e PS7)
+  if ($PSVersionTable.PSVersion.Major -ge 7) {
+      Write-Host "Rodando PS7+ — recursos avançados disponíveis"
+  } else {
+      Write-Host "Rodando PS5.1 — compatibilidade limitada"
+  }
 
-      <h2>Operadores Null-Coalescing e Null-Conditional</h2>
-      <CodeBlock title="Operadores do PS7 para tratamento de null" code={`# ?? — null coalescing (valor padrão se null)
-$config = $null
-$ambiente = $config ?? "producao"  # producao
-$porta    = $env:PORT ?? 8080
+  # Verificar plataforma (cross-platform)
+  $IsWindows  # True ou False
+  $IsLinux    # True ou False
+  $IsMacOS    # True ou False
+  [System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription
+  # .NET 8.0.x (PS7) vs .NET Framework 4.x (PS5.1)
+  `} />
 
-# ??= — null coalescing assignment
-$cache = $null
-$cache ??= @{}  # Só atribui se $cache for null
+        <h2>Operadores Null-Coalescing e Null-Conditional</h2>
+        <CodeBlock title="Tratamento elegante de valores nulos" code={`# ?? — null coalescing (valor padrão quando null)
+  $config   = $null
+  $ambiente = $config ?? "producao"       # "producao"
+  $porta    = $env:PORT ?? 8080           # 8080 se PORT não estiver definida
+  $timeout  = $config?.Timeout ?? 30     # 30
 
-# ?. — null conditional (evita NullReferenceException)
-$usuario = $null
-$nome  = $usuario?.Nome      # null (sem erro!)
-$email = $usuario?.Email?.ToLower()  # null encadeado
+  # ??= — atribuição com null coalescing
+  $cache = $null
+  $cache ??= @{}   # Só atribui se $cache for null (inicialização lazy)
+  $cache.Chave = "Valor"
 
-# Sem PS7 (verboso):
-$nome = if ($null -ne $usuario) { $usuario.Nome } else { $null }
-`} />
+  # ?. — null-conditional (evita NullReferenceException em cadeia)
+  $usuario = $null
+  $nome    = $usuario?.Nome         # null (sem erro de "property of null")
+  $email   = $usuario?.Contato?.Email?.ToLower()  # null encadeado
 
-      <h2>Operador Ternário</h2>
-      <CodeBlock title="Expressão condicional compacta" code={`# Operador ternário: condição ? valorVerdadeiro : valorFalso
-$idade = 20
-$categoria = $idade -ge 18 ? "adulto" : "menor"   # adulto
+  # Comparação: PS5.1 era muito mais verboso
+  # PS5.1:
+  $valor = if ($null -ne $config) { $config.Porta } else { 8080 }
+  # PS7:
+  $valor = $config?.Porta ?? 8080
+  `} />
 
-$env:NODE_ENV = "development"
-$modo = $env:NODE_ENV -eq "production" ? "PROD" : "DEV"  # DEV
+        <h2>Operador Ternário</h2>
+        <CodeBlock title="Condicionais inline compactas" code={`# condição ? valorVerdadeiro : valorFalso
+  $idade     = 20
+  $categoria = $idade -ge 18 ? "adulto" : "menor"   # "adulto"
 
-# Sem PS7 (if inline):
-$categoria = if ($idade -ge 18) { "adulto" } else { "menor" }
-`} />
+  $env:NODE_ENV = "development"
+  $modo = $env:NODE_ENV -eq "production" ? "PROD" : "DEV"  # "DEV"
 
-      <h2>ForEach-Object -Parallel</h2>
-      <CodeBlock title="Paralelismo nativo no PS7" code={`# Apenas no PowerShell 7+
-$servidores = "srv01","srv02","srv03","srv04","srv05"
+  # Em formatação de strings
+  $status = (Get-Service "W3SVC").Status
+  "W3SVC está $($status -eq "Running" ? "RODANDO" : "PARADO")"
 
-$resultados = $servidores | ForEach-Object -Parallel {
-    [PSCustomObject]@{
-        Servidor = $_
-        Online   = Test-Connection $_ -Count 1 -Quiet
-        Hora     = Get-Date
-    }
-} -ThrottleLimit 5
+  # Aninhado (use com moderação)
+  $nota = 85
+  $conceito = $nota -ge 90 ? "A" : ($nota -ge 80 ? "B" : ($nota -ge 70 ? "C" : "F"))
 
-$resultados | Format-Table -AutoSize
+  # PS5.1 equivalente:
+  $categoria = if ($idade -ge 18) { "adulto" } else { "menor" }
+  `} />
 
-# Pipeline chain operators (PS7)
-# && executa próximo se anterior sucedeu
-# || executa próximo se anterior falhou
-npm run build && npm run test    # testa somente se build passou
-npm install || Write-Warning "npm falhou, tentando yarn..."
-`} />
+        <h2>ForEach-Object -Parallel</h2>
+        <CodeBlock title="Processamento paralelo nativo (apenas PS7)" code={`# Processar em paralelo — velocidade x N threads
+  $servidores = "srv01","srv02","srv03","srv04","srv05","srv06"
 
-      <h2>Compatibilidade com Windows PowerShell 5.1</h2>
-      <CodeBlock title="Módulos de compatibilidade e diferenças" code={`# Módulos legados que só funcionam no PS5.1
-# (Active Directory, Exchange antigo, etc.)
+  $resultados = $servidores | ForEach-Object -Parallel {
+      $servidor = $_
+      [PSCustomObject]@{
+          Servidor  = $servidor
+          Online    = Test-Connection $servidor -Count 1 -Quiet -TimeoutSeconds 1
+          PingMS    = (Test-Connection $servidor -Count 1 -ErrorAction SilentlyContinue).Latency
+          DNSResolv = [bool](Resolve-DnsName $servidor -ErrorAction SilentlyContinue)
+      }
+  } -ThrottleLimit 6  # 6 threads paralelas
 
-# PS7 tem camada de compatibilidade
-Import-Module ActiveDirectory -UseWindowsPowerShell
+  $resultados | Sort-Object Servidor | Format-Table -AutoSize
 
-# Verificar versão no script para comportamento condicional
-if ($PSVersionTable.PSVersion.Major -ge 7) {
-    # Código específico do PS7
-    $resultado = $lista | ForEach-Object -Parallel { $_ }
-} else {
-    # Fallback para PS5.1
-    $resultado = $lista | ForEach-Object { $_ }
-}
+  # Usar variáveis do escopo pai com $using:
+  $caminho = "C:\\Scripts\\Backup.ps1"
+  1..5 | ForEach-Object -Parallel {
+      $script = $using:caminho  # Importar variável externa
+      & $script -Id $_
+  }
 
-# #Requires para garantir versão mínima
-#Requires -Version 7.2
-#Requires -Modules @{ ModuleName = "Az"; ModuleVersion = "10.0" }
-`} />
+  # Medir ganho de velocidade
+  $inicio = Get-Date
+  1..20 | ForEach-Object { Start-Sleep -Milliseconds 500 }  # ~10 segundos
+  Write-Host "Sequencial: $((Get-Date) - $inicio)"
 
-      <h2>Tabela Comparativa</h2>
-      <CodeBlock title="PS5.1 vs PS7+ — resumo de diferenças" code={`# Executar no PS7:
-@"
-Feature                  | PS 5.1  | PS 7+
--------------------------|---------|-------
-?. Null-conditional       |   Não   |  Sim
-?? Null-coalescing        |   Não   |  Sim
-Ternário (? :)            |   Não   |  Sim
-ForEach -Parallel         |   Não   |  Sim
-Pipeline chains (&& ||)   |   Não   |  Sim
-Get-Error                 |   Não   |  Sim
-Cross-platform (Linux/Mac)|   Não   |  Sim
-.NET Core / .NET 5+       |   Não   |  Sim
-SSH Remoting nativo       |   Não   |  Sim
-ErrorView = ConciseView   |   Não   |  Sim
-"@
-`} />
+  $inicio = Get-Date
+  1..20 | ForEach-Object -Parallel { Start-Sleep -Milliseconds 500 } -ThrottleLimit 10  # ~1 segundo
+  Write-Host "Paralelo: $((Get-Date) - $inicio)"
+  `} />
 
-      <AlertBox type="success" title="Use PS7 para Novos Projetos">
-        Para scripts novos, prefira sempre o PowerShell 7. Ele é mais rápido, mais seguro,
-        tem mais features e é multiplataforma. Use Windows PowerShell 5.1 apenas para módulos
-        legados que ainda não têm versão compatível com PS7.
-      </AlertBox>
-    </PageContainer>
-  );
-}
+        <h2>Pipeline Chain Operators</h2>
+        <CodeBlock title="&& e || para encadear comandos por resultado" code={`# && — executa o próximo SOMENTE se o anterior teve sucesso ($LASTEXITCODE = 0)
+  npm install && npm run build && npm test
+  git add . && git commit -m "feat: nova função" && git push
+
+  # || — executa o próximo SOMENTE se o anterior FALHOU
+  npm install || Write-Warning "npm falhou, tentando yarn..."
+  Connect-AzAccount || throw "Falha na autenticação Azure"
+
+  # Combinando:
+  Test-Path "C:\\Backup" || New-Item "C:\\Backup" -ItemType Directory
+  Copy-Item "dados.db" "C:\\Backup\\" && Write-Host "Backup OK" -ForegroundColor Green
+
+  # PS5.1 equivalente verboso:
+  npm install
+  if ($LASTEXITCODE -eq 0) {
+      npm run build
+      if ($LASTEXITCODE -eq 0) { npm test }
+  }
+  `} />
+
+        <h2>Melhorias de Tratamento de Erros</h2>
+        <CodeBlock title="ErrorView, erros detalhados e Get-Error" code={`# PS7 tem ErrorView conciso por padrão (não mais a pilha enorme)
+  $ErrorView = "ConciseView"   # Padrão no PS7 — mostra apenas o essencial
+  $ErrorView = "DetailedView"  # Mostra mais detalhes
+  $ErrorView = "NormalView"    # Comportamento do PS5.1
+
+  # Get-Error — inspecionar o último erro com detalhes completos
+  try {
+      Get-Item "C:\\arquivo-inexistente.txt" -ErrorAction Stop
+  } catch {
+      Get-Error  # Mostra pilha completa, categoria, exceção interna etc.
+  }
+
+  # Erros de pipeline agora são mais informativos
+  Get-ChildItem "C:\\pastas\\*" | ForEach-Object -ThrottleLimit 4 -Parallel {
+      try {
+          # Código que pode falhar
+          Get-Item $_.FullName -ErrorAction Stop
+      } catch {
+          Write-Error "Falha em $($_): $_"
+      }
+  }
+
+  # Invoke-Command com tratamento de erro aprimorado
+  Invoke-Command -ComputerName "srv01","srv02" -ScriptBlock {
+      Get-Service W3SVC
+  } -ErrorAction SilentlyContinue |
+      ForEach-Object {
+          if ($_ -is [System.Management.Automation.ErrorRecord]) {
+              "Erro em $($_.TargetObject): $($_.Exception.Message)"
+          } else { $_ }
+      }
+  `} />
+
+        <h2>Web Cmdlets Melhorados</h2>
+        <CodeBlock title="Invoke-RestMethod e Invoke-WebRequest no PS7" code={`# Invoke-RestMethod agora suporta autenticação OAuth, seguir redirects e mais
+  $resposta = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/PowerShell" `
+    -Headers @{ Accept = "application/vnd.github.v3+json" } `
+    -Method GET
+  $resposta.name
+  $resposta.stargazers_count
+
+  # Paginação automática com -FollowRelLink (PS7)
+  $issues = Invoke-RestMethod `
+    -Uri "https://api.github.com/repos/PowerShell/PowerShell/issues?per_page=100" `
+    -FollowRelLink `
+    -MaximumFollowRelLink 3   # Seguir até 3 páginas
+
+  # POST com JSON body (PS7 serializa automaticamente)
+  $body = @{ nome = "Teste"; valor = 42 } | ConvertTo-Json
+  Invoke-RestMethod -Uri "https://httpbin.org/post" `
+    -Method POST `
+    -Body $body `
+    -ContentType "application/json"
+
+  # Download de arquivo com progresso
+  Invoke-WebRequest -Uri "https://example.com/arquivo.zip" `
+    -OutFile "C:\\Downloads\\arquivo.zip" `
+    -Resume   # Retomar download interrompido (PS7)
+
+  # Skip verificação SSL (apenas para dev/test interno)
+  Invoke-RestMethod -Uri "https://servidor-interno/" -SkipCertificateCheck
+  `} />
+
+        <AlertBox type="success" title="Migração PS5.1 → PS7">
+          A maioria dos scripts PS5.1 roda sem modificação no PS7. Os pontos de atenção são:
+          módulos de administração do Windows que usam COM/DCOM (use compat layer com
+          <code>Import-Module -UseWindowsPowerShell</code>), <code>-Encoding Default</code>
+          que muda de ANSI para UTF-8, e <code>$null -eq @()</code> que agora é <code>False</code>.
+        </AlertBox>
+      </PageContainer>
+    );
+  }
+  
