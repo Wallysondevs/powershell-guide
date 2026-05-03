@@ -61,7 +61,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Get-WinEvent -LogName "Security" -FilterXPath "*[System[EventID=4625 or EventID=4624]]" -MaxEvents 100
 
   # Filtrar por provedor E EventID
-  Get-WinEvent -LogName "System" `
+  Get-WinEvent -LogName "System" \`
     -FilterXPath "*[System[Provider[@Name='Microsoft-Windows-Kernel-Power'] and EventID=41]]"
 
   # Filtrar por dado dentro do evento (XML)
@@ -125,20 +125,20 @@ import { PageContainer } from "@/components/layout/PageContainer";
   New-EventLog -Source "MeuScript" -LogName Application
 
   # Escrever eventos de diferentes níveis
-  Write-EventLog -LogName Application -Source "MeuScript" `
-    -EntryType Information -EventId 1000 `
+  Write-EventLog -LogName Application -Source "MeuScript" \`
+    -EntryType Information -EventId 1000 \`
     -Message "Backup iniciado às $(Get-Date -Format 'HH:mm:ss')"
 
-  Write-EventLog -LogName Application -Source "MeuScript" `
-    -EntryType Warning -EventId 1001 `
+  Write-EventLog -LogName Application -Source "MeuScript" \`
+    -EntryType Warning -EventId 1001 \`
     -Message "Espaço em disco abaixo de 10%: 8.2 GB livres"
 
-  Write-EventLog -LogName Application -Source "MeuScript" `
-    -EntryType Error -EventId 1002 `
+  Write-EventLog -LogName Application -Source "MeuScript" \`
+    -EntryType Error -EventId 1002 \`
     -Message "Falha ao conectar ao servidor de banco de dados: timeout após 30s"
 
   # Alternativa moderna: Write-WinEvent (PS7+, logs estruturados)
-  New-WinEvent -ProviderName Microsoft-Windows-Application-Experience `
+  New-WinEvent -ProviderName Microsoft-Windows-Application-Experience \`
     -Id 500 -Payload @("MeuApp","Iniciado","v2.1.0")
 
   # Verificar se a fonte existe antes de criar

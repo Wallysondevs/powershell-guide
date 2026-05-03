@@ -133,12 +133,12 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Criando Serviços Personalizados</h2>
         <CodeBlock title="Registrando e removendo serviços" code={`# Criar novo serviço
-  New-Service `
-    -Name "MonitorInfra" `
-    -BinaryPathName "C:\\Apps\\Monitor\\monitor.exe --config C:\\Apps\\Monitor\\config.json" `
-    -DisplayName "Monitor de Infraestrutura" `
-    -Description "Monitora servidores e envia alertas via e-mail" `
-    -StartupType Automatic `
+  New-Service \`
+    -Name "MonitorInfra" \`
+    -BinaryPathName "C:\\Apps\\Monitor\\monitor.exe --config C:\\Apps\\Monitor\\config.json" \`
+    -DisplayName "Monitor de Infraestrutura" \`
+    -Description "Monitora servidores e envia alertas via e-mail" \`
+    -StartupType Automatic \`
     -Credential (Get-Credential "NT AUTHORITY\\LocalService")
 
   # Verificar se foi criado
@@ -180,8 +180,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
                       Write-Host "$nome reiniciado com sucesso" -ForegroundColor Green
 
                       # Log do evento
-                      Write-EventLog -LogName Application -Source "MonitorPS" `
-                          -EntryType Warning -EventId 1001 `
+                      Write-EventLog -LogName Application -Source "MonitorPS" \`
+                          -EntryType Warning -EventId 1001 \`
                           -Message "Serviço $nome foi reiniciado automaticamente"
                   } catch {
                       Write-Error "Falha ao reiniciar $nome: $_"

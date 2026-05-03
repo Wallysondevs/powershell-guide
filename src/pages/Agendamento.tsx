@@ -48,37 +48,37 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Criando Tarefas Agendadas</h2>
         <CodeBlock title="Anatomia de uma tarefa: Ação, Gatilho, Configurações, Registro" code={`# 1. AÇÃO — O que a tarefa vai executar
-  $action = New-ScheduledTaskAction `
-    -Execute    "pwsh.exe" `
-    -Argument   "-NoProfile -NonInteractive -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1" `
+  $action = New-ScheduledTaskAction \`
+    -Execute    "pwsh.exe" \`
+    -Argument   "-NoProfile -NonInteractive -WindowStyle Hidden -File C:\\Scripts\\Backup.ps1" \`
     -WorkingDirectory "C:\\Scripts"
 
   # 2. GATILHO — Quando vai executar
   $trigger = New-ScheduledTaskTrigger -Daily -At "03:00AM"
 
   # 3. CONFIGURAÇÕES — Comportamento
-  $settings = New-ScheduledTaskSettings `
-    -AllowStartIfOnBatteries `
-    -DontStopIfGoingOnBatteries `
-    -ExecutionTimeLimit (New-TimeSpan -Hours 2) `  # Máximo 2 horas de execução
-    -RestartCount 3 `                              # Reintentar 3x em caso de falha
-    -RestartInterval (New-TimeSpan -Minutes 5) `  # A cada 5 min
+  $settings = New-ScheduledTaskSettings \`
+    -AllowStartIfOnBatteries \`
+    -DontStopIfGoingOnBatteries \`
+    -ExecutionTimeLimit (New-TimeSpan -Hours 2) \`  # Máximo 2 horas de execução
+    -RestartCount 3 \`                              # Reintentar 3x em caso de falha
+    -RestartInterval (New-TimeSpan -Minutes 5) \`  # A cada 5 min
     -MultipleInstances IgnoreNew                   # Não iniciar outra se já está rodando
 
   # 4. PRINCIPAL — Contexto de execução
-  $principal = New-ScheduledTaskPrincipal `
-    -UserId    "SYSTEM" `
-    -LogonType ServiceAccount `
+  $principal = New-ScheduledTaskPrincipal \`
+    -UserId    "SYSTEM" \`
+    -LogonType ServiceAccount \`
     -RunLevel  Highest
 
   # 5. REGISTRO
-  Register-ScheduledTask `
-    -TaskName "BackupDiario" `
-    -TaskPath "\\MinhsEmpresa" `
-    -Action   $action `
-    -Trigger  $trigger `
-    -Settings $settings `
-    -Principal $principal `
+  Register-ScheduledTask \`
+    -TaskName "BackupDiario" \`
+    -TaskPath "\\MinhsEmpresa" \`
+    -Action   $action \`
+    -Trigger  $trigger \`
+    -Settings $settings \`
+    -Principal $principal \`
     -Description "Backup diário dos dados críticos"
 
   Write-Host "Tarefa BackupDiario criada com sucesso!" -ForegroundColor Green
@@ -89,13 +89,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
   $triggerDiario = New-ScheduledTaskTrigger -Daily -At "03:00AM"
 
   # Semanal — segundas e sextas às 18h
-  $triggerSemanal = New-ScheduledTaskTrigger -Weekly `
-    -DaysOfWeek Monday, Friday `
+  $triggerSemanal = New-ScheduledTaskTrigger -Weekly \`
+    -DaysOfWeek Monday, Friday \`
     -At "06:00PM"
 
   # Mensal — todo dia 1 do mês às 8h
-  $triggerMensal = New-ScheduledTaskTrigger -Monthly `
-    -DaysOfMonth 1 `
+  $triggerMensal = New-ScheduledTaskTrigger -Monthly \`
+    -DaysOfMonth 1 \`
     -At "08:00AM"
 
   # Na inicialização do Windows
@@ -108,8 +108,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   $triggerUnico = New-ScheduledTaskTrigger -Once -At "2025-12-31 23:00:00"
 
   # Repetição — a cada 15 minutos (útil para polling)
-  $triggerRepetido = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 15) `
-    -RepetitionDuration (New-TimeSpan -Hours 8) `  # Por 8 horas
+  $triggerRepetido = New-ScheduledTaskTrigger -RepetitionInterval (New-TimeSpan -Minutes 15) \`
+    -RepetitionDuration (New-TimeSpan -Hours 8) \`  # Por 8 horas
     -Once -At (Get-Date)
 
   # Baseado em evento do Event Log (ex: quando um serviço para)
@@ -153,16 +153,16 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <h2>Múltiplas Ações e Tarefas Avançadas</h2>
         <CodeBlock title="Tarefas com múltiplas ações e monitoramento" code={`# Tarefa com MÚLTIPLAS ações (executadas em sequência)
   $acoes = @(
-      New-ScheduledTaskAction -Execute "pwsh.exe" `
+      New-ScheduledTaskAction -Execute "pwsh.exe" \`
           -Argument "-File C:\\Scripts\\Pre-Backup.ps1",
-      New-ScheduledTaskAction -Execute "pwsh.exe" `
+      New-ScheduledTaskAction -Execute "pwsh.exe" \`
           -Argument "-File C:\\Scripts\\Backup.ps1",
-      New-ScheduledTaskAction -Execute "pwsh.exe" `
+      New-ScheduledTaskAction -Execute "pwsh.exe" \`
           -Argument "-File C:\\Scripts\\Pos-Backup.ps1"
   )
 
   $trigger = New-ScheduledTaskTrigger -Daily -At "02:00AM"
-  Register-ScheduledTask -TaskName "BackupCompleto" `
+  Register-ScheduledTask -TaskName "BackupCompleto" \`
     -Action $acoes -Trigger $trigger -User "SYSTEM" -RunLevel Highest
 
   # Relatório de tarefas com falha recente

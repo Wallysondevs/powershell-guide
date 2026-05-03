@@ -114,9 +114,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Update-TypeData — Tipos Personalizados</h2>
         <CodeBlock title="Estendendo tipos .NET com propriedades permanentes" code={`# Adicionar propriedades a FileInfo (todos os objetos de arquivo ganham a propriedade)
-  Update-TypeData -TypeName System.IO.FileInfo `
-    -MemberType ScriptProperty `
-    -MemberName "TamanhoFormatado" `
+  Update-TypeData -TypeName System.IO.FileInfo \`
+    -MemberType ScriptProperty \`
+    -MemberName "TamanhoFormatado" \`
     -Value {
       switch ($this.Length) {
           { $_ -ge 1GB } { return "{0:N2} GB" -f ($_ / 1GB) }
@@ -132,13 +132,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Format-Table -AutoSize
 
   # Adicionar método a [string]
-  Update-TypeData -TypeName System.String `
-    -MemberType ScriptMethod `
-    -MemberName "Reverse" `
+  Update-TypeData -TypeName System.String \`
+    -MemberType ScriptMethod \`
+    -MemberName "Reverse" \`
     -Value { [string]([char[]]$this | ForEach-Object { $_ } | Sort-Object { [array]::IndexOf([char[]]$this, $_) } -Descending) -join '' }
 
   # Propriedade DefaultDisplayPropertySet — controla o que Format-Table mostra por padrão
-  Update-TypeData -TypeName System.Diagnostics.Process `
+  Update-TypeData -TypeName System.Diagnostics.Process \`
     -DefaultDisplayPropertySet Name, Id, CPU, WorkingSet64, StartTime
   `} />
 

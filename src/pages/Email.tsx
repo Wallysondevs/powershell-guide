@@ -27,19 +27,19 @@ import { PageContainer } from "@/components/layout/PageContainer";
   }
 
   # E-mail simples de texto
-  Send-MailMessage @smtp `
-    -From    "remetente@empresa.com" `
-    -To      "destinatario@empresa.com" `
-    -Subject "Relatório Diário - $(Get-Date -Format 'dd/MM/yyyy')" `
+  Send-MailMessage @smtp \`
+    -From    "remetente@empresa.com" \`
+    -To      "destinatario@empresa.com" \`
+    -Subject "Relatório Diário - $(Get-Date -Format 'dd/MM/yyyy')" \`
     -Body    "O backup foi concluído com sucesso às $(Get-Date -Format 'HH:mm')."
 
   # Para múltiplos destinatários com CC e BCC
-  Send-MailMessage @smtp `
-    -From    "alertas@empresa.com" `
-    -To      @("admin@empresa.com", "suporte@empresa.com") `
-    -Cc      "gerente@empresa.com" `
-    -Bcc     "auditoria@empresa.com" `
-    -Subject "Alerta do Sistema" `
+  Send-MailMessage @smtp \`
+    -From    "alertas@empresa.com" \`
+    -To      @("admin@empresa.com", "suporte@empresa.com") \`
+    -Cc      "gerente@empresa.com" \`
+    -Bcc     "auditoria@empresa.com" \`
+    -Subject "Alerta do Sistema" \`
     -Body    "Servidor offline detectado em $(Get-Date)."
 
   # Exchange Server interno (sem SSL)
@@ -88,12 +88,12 @@ import { PageContainer } from "@/components/layout/PageContainer";
   </html>
   "@
 
-  Send-MailMessage @smtp `
-    -From     "relatorios@empresa.com" `
-    -To       "ti@empresa.com" `
-    -Subject  "Relatório de Processos - $(Get-Date -Format 'dd/MM')" `
-    -Body     $corpo `
-    -BodyAsHtml `
+  Send-MailMessage @smtp \`
+    -From     "relatorios@empresa.com" \`
+    -To       "ti@empresa.com" \`
+    -Subject  "Relatório de Processos - $(Get-Date -Format 'dd/MM')" \`
+    -Body     $corpo \`
+    -BodyAsHtml \`
     -Encoding UTF8
   `} />
 
@@ -104,11 +104,11 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Export-Csv $relatorio -NoTypeInformation -Encoding UTF8
 
   # Enviar com um anexo
-  Send-MailMessage @smtp `
-    -From        "relatorios@empresa.com" `
-    -To          "gerente@empresa.com" `
-    -Subject     "Relatório Semanal de Processos" `
-    -Body        "Segue em anexo o relatório semanal do servidor $env:COMPUTERNAME." `
+  Send-MailMessage @smtp \`
+    -From        "relatorios@empresa.com" \`
+    -To          "gerente@empresa.com" \`
+    -Subject     "Relatório Semanal de Processos" \`
+    -Body        "Segue em anexo o relatório semanal do servidor $env:COMPUTERNAME." \`
     -Attachments $relatorio
 
   # Múltiplos anexos (relatório + log de erros + screenshot)
@@ -118,11 +118,11 @@ import { PageContainer } from "@/components/layout/PageContainer";
   ) | Where-Object { Test-Path $_ }  # Só anexar arquivos que existem
 
   if ($anexos) {
-      Send-MailMessage @smtp `
-        -From        "alertas@empresa.com" `
-        -To          "admin@empresa.com" `
-        -Subject     "Relatório Completo - $(Get-Date -Format 'dd/MM')" `
-        -Body        "Vide anexos com relatórios do servidor." `
+      Send-MailMessage @smtp \`
+        -From        "alertas@empresa.com" \`
+        -To          "admin@empresa.com" \`
+        -Subject     "Relatório Completo - $(Get-Date -Format 'dd/MM')" \`
+        -Body        "Vide anexos com relatórios do servidor." \`
         -Attachments $anexos
   }
 
@@ -164,21 +164,21 @@ import { PageContainer } from "@/components/layout/PageContainer";
           (ConvertTo-SecureString $env:SMTP_PASSWORD -AsPlainText -Force)
       )
 
-      Send-MailMessage `
-          -SmtpServer $env:SMTP_SERVER -Port 587 -UseSsl `
-          -Credential $cred `
-          -From    $env:SMTP_FROM `
-          -To      "ti@empresa.com" `
-          -Subject "[$Nivel] $Assunto" `
-          -Body    $corpo `
+      Send-MailMessage \`
+          -SmtpServer $env:SMTP_SERVER -Port 587 -UseSsl \`
+          -Credential $cred \`
+          -From    $env:SMTP_FROM \`
+          -To      "ti@empresa.com" \`
+          -Subject "[$Nivel] $Assunto" \`
+          -Body    $corpo \`
           -BodyAsHtml -Encoding UTF8
   }
 
   # Monitoramento de CPU
   $cpu = (Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average
   if ($cpu -gt 90) {
-      Send-Alerta -Assunto "CPU crítica: $cpu%" `
-          -Mensagem "CPU acima de 90% há vários minutos. Verificar processos." `
+      Send-Alerta -Assunto "CPU crítica: $cpu%" \`
+          -Mensagem "CPU acima de 90% há vários minutos. Verificar processos." \`
           -Nivel "CRITICO"
   }
 
@@ -186,8 +186,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Used } | ForEach-Object {
       $pct = [math]::Round($_.Used / ($_.Used + $_.Free) * 100)
       if ($pct -gt 85) {
-          Send-Alerta -Assunto "Disco $($_.Name): cheio $pct%" `
-              -Mensagem "Disco $($_.Name) em $pct% de uso no servidor $env:COMPUTERNAME" `
+          Send-Alerta -Assunto "Disco $($_.Name): cheio $pct%" \`
+              -Mensagem "Disco $($_.Name) em $pct% de uso no servidor $env:COMPUTERNAME" \`
               -Nivel "AVISO"
       }
   }
@@ -198,8 +198,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Install-Module Microsoft.Graph.Mail -Scope CurrentUser
 
   # Autenticar (requer app registrada no Azure AD)
-  Connect-MgGraph -TenantId "seu-tenant-id" `
-      -ClientId "seu-app-id" `
+  Connect-MgGraph -TenantId "seu-tenant-id" \`
+      -ClientId "seu-app-id" \`
       -CertificateThumbprint "THUMBPRINT"  # Ou -ClientSecretCredential
 
   # Enviar e-mail via Graph API

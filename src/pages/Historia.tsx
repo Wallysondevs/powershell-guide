@@ -195,7 +195,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <AlertBox type="success" title="Como instalar o PowerShell 7 agora">
           Via winget (Windows 10+):
-          <code style={{'{'}}{{'}'} display:'block', marginTop:'0.5rem' {'}'}}>winget install Microsoft.PowerShell</code>
+          <code style={{ display: 'block', marginTop: '0.5rem' }}>winget install Microsoft.PowerShell</code>
           Após instalado, abra com o comando <code>pwsh</code>. Ele coexiste perfeitamente com o 5.1.
         </AlertBox>
       </PageContainer>

@@ -82,7 +82,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   $dados = Import-Csv "sem-cabecalho.csv" -Header "ID","Nome","Email","Cidade"
 
   # TSV (tab-separated values)
-  $tsv = Import-Csv "dados.tsv" -Delimiter "`t"  # tab = crase t
+  $tsv = Import-Csv "dados.tsv" -Delimiter "\`t"  # tab = crase t
 
   # PSV (pipe-separated)
   $psv = Import-Csv "dados.psv" -Delimiter "|"
@@ -199,13 +199,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Get-Process | Select-Object -First 20 Name, Id,
       @{N="CPU (s)"; E={[math]::Round($_.CPU,2)}},
       @{N="RAM (MB)"; E={[math]::Round($_.WorkingSet64/1MB,1)}} |
-      Export-Excel "processos.xlsx" `
-        -WorksheetName "Processos" `
-        -AutoSize `
-        -AutoFilter `
-        -FreezeTopRow `
-        -BoldTopRow `
-        -TableName "TabelaProcessos" `
+      Export-Excel "processos.xlsx" \`
+        -WorksheetName "Processos" \`
+        -AutoSize \`
+        -AutoFilter \`
+        -FreezeTopRow \`
+        -BoldTopRow \`
+        -TableName "TabelaProcessos" \`
         -TableStyle "Medium9"
 
   # Múltiplas planilhas no mesmo arquivo

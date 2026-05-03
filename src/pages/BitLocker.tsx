@@ -22,18 +22,18 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Habilitar BitLocker no volume C: com TPM + PIN
   $pin = ConvertTo-SecureString "1234" -AsPlainText -Force
-  Enable-BitLocker -MountPoint "C:" `
-    -EncryptionMethod XtsAes256 `
-    -TpmAndPinProtector `
+  Enable-BitLocker -MountPoint "C:" \`
+    -EncryptionMethod XtsAes256 \`
+    -TpmAndPinProtector \`
     -Pin $pin
 
   # Adicionar protetor de recuperação (chave de recuperação)
   Add-BitLockerKeyProtector -MountPoint "C:" -RecoveryPasswordProtector
 
   # Habilitar em disco de dados (sem TPM)
-  Enable-BitLocker -MountPoint "D:" `
-    -EncryptionMethod XtsAes256 `
-    -PasswordProtector `
+  Enable-BitLocker -MountPoint "D:" \`
+    -EncryptionMethod XtsAes256 \`
+    -PasswordProtector \`
     -Password (ConvertTo-SecureString "SenhaForte@123" -AsPlainText -Force)
 
   # Habilitar com apenas TPM (sem PIN — mais conveniente, menos seguro)
@@ -113,8 +113,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   do {
       $vol  = Get-BitLockerVolume -MountPoint "C:"
       $pct  = $vol.EncryptionPercentage
-      Write-Progress -Activity "Criptografando C:" `
-          -PercentComplete $pct `
+      Write-Progress -Activity "Criptografando C:" \`
+          -PercentComplete $pct \`
           -Status "$pct% concluído — Status: $($vol.VolumeStatus)"
       Start-Sleep -Seconds 5
   } while ($vol.VolumeStatus -in "EncryptionInProgress","DecryptionInProgress")
@@ -213,8 +213,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # Adicionar chave de recuperação USB como segundo fator
   $usb = Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq "Removable" }
   if ($usb) {
-      Add-BitLockerKeyProtector -MountPoint "C:" `
-          -StartupKeyPath ($usb.DriveLetter + ":\") `
+      Add-BitLockerKeyProtector -MountPoint "C:" \`
+          -StartupKeyPath ($usb.DriveLetter + ":\") \`
           -StartupKeyProtector
   }
 

@@ -32,14 +32,14 @@ import { PageContainer } from "@/components/layout/PageContainer";
   New-GPO -Name "Politica-Seguranca-TI" -Comment "Políticas de segurança para o departamento de TI"
 
   # Vincular GPO a uma OU
-  New-GPLink -Name "Politica-Seguranca-TI" `
-    -Target "OU=TI,OU=Funcionarios,DC=empresa,DC=com" `
-    -LinkEnabled Yes `
+  New-GPLink -Name "Politica-Seguranca-TI" \`
+    -Target "OU=TI,OU=Funcionarios,DC=empresa,DC=com" \`
+    -LinkEnabled Yes \`
     -Order 1
 
   # Habilitar/desabilitar link sem excluir
-  Set-GPLink -Name "Politica-Seguranca-TI" `
-    -Target "OU=TI,OU=Funcionarios,DC=empresa,DC=com" `
+  Set-GPLink -Name "Politica-Seguranca-TI" \`
+    -Target "OU=TI,OU=Funcionarios,DC=empresa,DC=com" \`
     -LinkEnabled No
 
   # Desabilitar parte da GPO (User ou Computer Configuration)
@@ -50,14 +50,14 @@ import { PageContainer } from "@/components/layout/PageContainer";
   (Get-ADOrganizationalUnit "OU=TI,OU=Funcionarios,DC=empresa,DC=com").LinkedGroupPolicyObjects
 
   # Modificar configuração de registro via GPO
-  Set-GPRegistryValue -Name "Politica-Seguranca-TI" `
-    -Key "HKLM\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services" `
-    -ValueName "fDenyTSConnections" `
+  Set-GPRegistryValue -Name "Politica-Seguranca-TI" \`
+    -Key "HKLM\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services" \`
+    -ValueName "fDenyTSConnections" \`
     -Type DWord -Value 0  # 0 = Habilitar RDP via GPO
 
   # Remover configuração de registro
-  Remove-GPRegistryValue -Name "Politica-Seguranca-TI" `
-    -Key "HKLM\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services" `
+  Remove-GPRegistryValue -Name "Politica-Seguranca-TI" \`
+    -Key "HKLM\\Software\\Policies\\Microsoft\\Windows NT\\Terminal Services" \`
     -ValueName "fDenyTSConnections"
   `} />
 
@@ -99,40 +99,40 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # Para restringir apenas a um grupo específico:
 
   # 1. Remover Authenticated Users (Apply)
-  Set-GPPermission -Name "Politica-Seguranca-TI" `
-    -TargetName "Authenticated Users" `
-    -TargetType Group `
+  Set-GPPermission -Name "Politica-Seguranca-TI" \`
+    -TargetName "Authenticated Users" \`
+    -TargetType Group \`
     -PermissionLevel None
 
   # 2. Adicionar apenas o grupo desejado
-  Set-GPPermission -Name "Politica-Seguranca-TI" `
-    -TargetName "GRP-TI-Devs" `
-    -TargetType Group `
+  Set-GPPermission -Name "Politica-Seguranca-TI" \`
+    -TargetName "GRP-TI-Devs" \`
+    -TargetType Group \`
     -PermissionLevel GpoApply
 
   # Adicionar permissão de leitura (ver mas não receber a GPO)
-  Set-GPPermission -Name "Politica-Seguranca-TI" `
-    -TargetName "GRP-Auditoria" `
-    -TargetType Group `
+  Set-GPPermission -Name "Politica-Seguranca-TI" \`
+    -TargetName "GRP-Auditoria" \`
+    -TargetType Group \`
     -PermissionLevel GpoRead
 
   # Scripts via GPO (Startup/Logon/Shutdown/Logoff)
-  Set-GPRegistryValue -Name "Politica-TI" `
-    -Key "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" `
-    -ValueName "IniciaTI" `
-    -Type String `
+  Set-GPRegistryValue -Name "Politica-TI" \`
+    -Key "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run" \`
+    -ValueName "IniciaTI" \`
+    -Type String \`
     -Value "powershell.exe -ExecutionPolicy Bypass -File \\\\servidor\\scripts\\inicio.ps1"
   `} />
 
         <h2>Relatórios de GPO</h2>
         <CodeBlock title="Gerando relatórios HTML e XML" code={`# Relatório HTML de uma GPO específica
-  Get-GPOReport -Name "Default Domain Policy" `
-    -ReportType HTML `
+  Get-GPOReport -Name "Default Domain Policy" \`
+    -ReportType HTML \`
     -Path "C:\\Relatorios\\DefaultDomainPolicy.html"
 
   # Relatório XML (para processamento automatizado)
-  Get-GPOReport -Name "Politica-Seguranca-TI" `
-    -ReportType XML `
+  Get-GPOReport -Name "Politica-Seguranca-TI" \`
+    -ReportType XML \`
     -Path "C:\\Relatorios\\SegurancaTI.xml"
 
   # Relatório de TODAS as GPOs do domínio
@@ -140,8 +140,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
   New-Item -ItemType Directory -Path $pasta -Force | Out-Null
   Get-GPO -All | ForEach-Object {
       $nome = $_.DisplayName -replace '[\\\/:*?"<>|]', '_'
-      Get-GPOReport -Name $_.DisplayName `
-        -ReportType HTML `
+      Get-GPOReport -Name $_.DisplayName \`
+        -ReportType HTML \`
         -Path "$pasta\\$nome.html"
       Write-Host "✔ Relatório: $nome"
   }
@@ -160,14 +160,14 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <CodeBlock title="Backup completo de políticas de grupo" code={`$dataPasta = Get-Date -Format 'yyyyMMdd'
 
   # Backup de GPO específica
-  Backup-GPO -Name "Politica-Seguranca-TI" `
-    -Path "C:\\GPO-Backups" `
+  Backup-GPO -Name "Politica-Seguranca-TI" \`
+    -Path "C:\\GPO-Backups" \`
     -Comment "Backup antes da atualização Q1 2025"
 
   # Backup de TODAS as GPOs do domínio
   $backupPath = "C:\\GPO-Backups\\$dataPasta"
   New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
-  Backup-GPO -All -Path $backupPath `
+  Backup-GPO -All -Path $backupPath \`
     -Comment "Backup mensal $(Get-Date -Format 'MM/yyyy')"
 
   # Listar backups disponíveis
@@ -182,23 +182,23 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Sort-Object Timestamp -Descending |
       Select-Object -First 1
 
-  Restore-GPO -Name "Politica-Seguranca-TI" `
-    -Path "C:\\GPO-Backups" `
+  Restore-GPO -Name "Politica-Seguranca-TI" \`
+    -Path "C:\\GPO-Backups" \`
     -BackupId $backup.Id
 
   # Importar GPO de outro domínio (migração)
-  Import-GPO -BackupId $backup.Id `
-    -Path "C:\\GPO-Backups" `
-    -TargetName "Politica-Nova-Importada" `
+  Import-GPO -BackupId $backup.Id \`
+    -Path "C:\\GPO-Backups" \`
+    -TargetName "Politica-Nova-Importada" \`
     -CreateIfNeeded
   `} />
 
         <h2>Resultante de Políticas (RSoP)</h2>
         <CodeBlock title="Analisando políticas aplicadas a um usuário/computador" code={`# Simular RSoP — sem aplicar políticas, só visualizar o resultado
-  Get-GPResultantSetOfPolicy `
-    -Computer "WS-TI-001" `
-    -User "EMPRESA\\joao.silva" `
-    -ReportType HTML `
+  Get-GPResultantSetOfPolicy \`
+    -Computer "WS-TI-001" \`
+    -User "EMPRESA\\joao.silva" \`
+    -ReportType HTML \`
     -Path "C:\\Relatorios\\rsop-joao.html"
 
   # Abrir relatório automaticamente
@@ -208,7 +208,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Invoke-GPUpdate -Computer "WS-TI-001" -Force -RandomDelayInMinutes 0
 
   # Forçar gpupdate em TODOS os computadores de uma OU
-  $computadores = Get-ADComputer -SearchBase "OU=TI,OU=Funcionarios,DC=empresa,DC=com" `
+  $computadores = Get-ADComputer -SearchBase "OU=TI,OU=Funcionarios,DC=empresa,DC=com" \`
       -Filter * | Select-Object -ExpandProperty Name
 
   $jobs = $computadores | ForEach-Object {

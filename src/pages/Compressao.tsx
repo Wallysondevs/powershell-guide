@@ -19,26 +19,26 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Compress-Archive e Expand-Archive</h2>
         <CodeBlock title="Comprimindo e extraindo arquivos" code={`# Comprimir pasta inteira
-  Compress-Archive -Path "C:\\MeuProjeto" `
+  Compress-Archive -Path "C:\\MeuProjeto" \`
     -DestinationPath "C:\\Backups\\projeto-$(Get-Date -Format 'yyyyMMdd').zip"
 
   # Comprimir múltiplos arquivos/pastas
-  Compress-Archive -Path "C:\\Scripts\\*.ps1", "C:\\Config\\app.json" `
+  Compress-Archive -Path "C:\\Scripts\\*.ps1", "C:\\Config\\app.json" \`
     -DestinationPath "C:\\Deploy\\pacote.zip"
 
   # Comprimir com nível máximo (usando -CompressionLevel)
-  Compress-Archive -Path "C:\\MeuProjeto" `
-    -DestinationPath "C:\\Backups\\projeto.zip" `
+  Compress-Archive -Path "C:\\MeuProjeto" \`
+    -DestinationPath "C:\\Backups\\projeto.zip" \`
     -CompressionLevel Optimal  # NoCompression, Fastest, Optimal
 
   # Atualizar ZIP existente (adicionar/substituir arquivos)
-  Compress-Archive -Path "C:\\Novo\\arquivo.txt" `
-    -DestinationPath "C:\\Backups\\pacote.zip" `
+  Compress-Archive -Path "C:\\Novo\\arquivo.txt" \`
+    -DestinationPath "C:\\Backups\\pacote.zip" \`
     -Update
 
   # Extrair ZIP completo
-  Expand-Archive -Path "C:\\Backups\\pacote.zip" `
-    -DestinationPath "C:\\Restaurado" `
+  Expand-Archive -Path "C:\\Backups\\pacote.zip" \`
+    -DestinationPath "C:\\Restaurado" \`
     -Force  # Sobrescrever arquivos existentes
 
   # Extrair para pasta com timestamp
@@ -148,7 +148,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   )
 
   foreach ($c in $config) {
-      New-Backup -Origem $c.Origem -DestinoPasta $c.Pasta `
+      New-Backup -Origem $c.Origem -DestinoPasta $c.Pasta \`
           -Prefixo $c.Prefixo -ManterUltimos $c.Manter
   }
   `} />

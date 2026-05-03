@@ -80,9 +80,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Set-PSRepository -Name "PSGallery" -InstallationPolicy Trusted
 
   # Registrar repositório privado (NuGet feed — Nexus, Azure Artifacts, etc.)
-  Register-PSRepository `
-    -Name "RepoEmpresa" `
-    -SourceLocation "https://nexus.empresa.com/repository/ps-hosted/api/v2" `
+  Register-PSRepository \`
+    -Name "RepoEmpresa" \`
+    -SourceLocation "https://nexus.empresa.com/repository/ps-hosted/api/v2" \`
     -InstallationPolicy Trusted
 
   # Instalar de repositório privado
@@ -91,9 +91,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # Repositório local (pasta de rede — útil em ambientes offline)
   $pastaRepo = "\\\\servidor\\PSRepo"
   New-Item -ItemType Directory $pastaRepo -Force
-  Register-PSRepository -Name "RepoLocal" `
-    -SourceLocation $pastaRepo `
-    -PublishLocation $pastaRepo `
+  Register-PSRepository -Name "RepoLocal" \`
+    -SourceLocation $pastaRepo \`
+    -PublishLocation $pastaRepo \`
     -InstallationPolicy Trusted
 
   # Publicar no repositório local
@@ -157,17 +157,17 @@ import { PageContainer } from "@/components/layout/PageContainer";
   #     └── MeuModulo.dll-Help.xml
 
   # Criar manifesto do módulo
-  New-ModuleManifest `
-    -Path "C:\\Dev\\MeuModulo\\MeuModulo.psd1" `
-    -RootModule "MeuModulo.psm1" `
-    -ModuleVersion "1.0.0" `
-    -Author "Seu Nome" `
-    -CompanyName "Empresa" `
-    -Description "Automação de infraestrutura interna" `
-    -PowerShellVersion "5.1" `
-    -FunctionsToExport @("Get-Dados","Set-Config","Invoke-Processo") `
-    -Tags @("Automação","Infraestrutura","Windows") `
-    -ProjectUri "https://github.com/empresa/MeuModulo" `
+  New-ModuleManifest \`
+    -Path "C:\\Dev\\MeuModulo\\MeuModulo.psd1" \`
+    -RootModule "MeuModulo.psm1" \`
+    -ModuleVersion "1.0.0" \`
+    -Author "Seu Nome" \`
+    -CompanyName "Empresa" \`
+    -Description "Automação de infraestrutura interna" \`
+    -PowerShellVersion "5.1" \`
+    -FunctionsToExport @("Get-Dados","Set-Config","Invoke-Processo") \`
+    -Tags @("Automação","Infraestrutura","Windows") \`
+    -ProjectUri "https://github.com/empresa/MeuModulo" \`
     -LicenseUri "https://github.com/empresa/MeuModulo/blob/main/LICENSE"
 
   # psm1 — carregador que importa todas as funções

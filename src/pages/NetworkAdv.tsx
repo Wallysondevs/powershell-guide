@@ -23,14 +23,14 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Select-Object InterfaceAlias, IPAddress, PrefixLength, AddressState
 
   # Configurar IP estático
-  New-NetIPAddress `
-    -InterfaceAlias "Ethernet" `
-    -IPAddress "192.168.1.100" `
-    -PrefixLength 24 `
+  New-NetIPAddress \`
+    -InterfaceAlias "Ethernet" \`
+    -IPAddress "192.168.1.100" \`
+    -PrefixLength 24 \`
     -DefaultGateway "192.168.1.1"
 
   # Configurar DNS
-  Set-DnsClientServerAddress -InterfaceAlias "Ethernet" `
+  Set-DnsClientServerAddress -InterfaceAlias "Ethernet" \`
     -ServerAddresses "192.168.1.10","8.8.8.8"
 
   # Voltar para DHCP
@@ -60,13 +60,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Get-DnsServerZone | Format-Table ZoneName, ZoneType, IsAutoCreated, DynamicUpdate
 
   # Criar zona primária
-  Add-DnsServerPrimaryZone -Name "empresa.local" `
-    -ReplicationScope Domain `
+  Add-DnsServerPrimaryZone -Name "empresa.local" \`
+    -ReplicationScope Domain \`
     -DynamicUpdate Secure
 
   # Criar zona de stub (aponta para outro DNS)
-  Add-DnsServerStubZone -Name "filial.local" `
-    -MasterServers "10.10.1.10" `
+  Add-DnsServerStubZone -Name "filial.local" \`
+    -MasterServers "10.10.1.10" \`
     -ReplicationScope Domain
 
   # Registros DNS — A, CNAME, MX, PTR
@@ -78,7 +78,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # Listar registros e remover
   Get-DnsServerResourceRecord -ZoneName "empresa.local" |
       Select-Object HostName, RecordType | Format-Table
-  Remove-DnsServerResourceRecord -ZoneName "empresa.local" `
+  Remove-DnsServerResourceRecord -ZoneName "empresa.local" \`
     -RRType "A" -Name "web01" -Confirm:$false
 
   # Diagnóstico DNS (cliente)
@@ -95,29 +95,29 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Get-DhcpServerv4Scope | Format-Table ScopeId, Name, StartRange, EndRange, State, LeaseDuration
 
   # Criar escopo
-  Add-DhcpServerv4Scope `
-    -Name "Escritório Principal" `
-    -StartRange "192.168.1.100" `
-    -EndRange   "192.168.1.200" `
-    -SubnetMask  "255.255.255.0" `
+  Add-DhcpServerv4Scope \`
+    -Name "Escritório Principal" \`
+    -StartRange "192.168.1.100" \`
+    -EndRange   "192.168.1.200" \`
+    -SubnetMask  "255.255.255.0" \`
     -LeaseDuration "1.00:00:00"  # 1 dia
 
   # Configurar opções do escopo (gateway, DNS)
-  Set-DhcpServerv4OptionValue -ScopeId "192.168.1.0" `
-    -Router     "192.168.1.1" `
-    -DnsServer  "192.168.1.10","8.8.8.8" `
+  Set-DhcpServerv4OptionValue -ScopeId "192.168.1.0" \`
+    -Router     "192.168.1.1" \`
+    -DnsServer  "192.168.1.10","8.8.8.8" \`
     -DnsDomain  "empresa.local"
 
   # Exclusões (IPs que o DHCP não vai distribuir)
-  Add-DhcpServerv4ExclusionRange -ScopeId "192.168.1.0" `
-    -StartRange "192.168.1.1" `
+  Add-DhcpServerv4ExclusionRange -ScopeId "192.168.1.0" \`
+    -StartRange "192.168.1.1" \`
     -EndRange   "192.168.1.20"
 
   # Reservas (MAC → IP fixo)
-  Add-DhcpServerv4Reservation `
-    -ScopeId      "192.168.1.0" `
-    -IPAddress    "192.168.1.50" `
-    -ClientId     "00-11-22-33-44-55" `
+  Add-DhcpServerv4Reservation \`
+    -ScopeId      "192.168.1.0" \`
+    -IPAddress    "192.168.1.50" \`
+    -ClientId     "00-11-22-33-44-55" \`
     -Description  "Servidor Web"
 
   # Listar concessões ativas
@@ -137,13 +137,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Select-Object DisplayName, Action, Profile | Format-Table -AutoSize
 
   # Criar regras
-  New-NetFirewallRule -DisplayName "Permitir HTTPS Entrada" `
+  New-NetFirewallRule -DisplayName "Permitir HTTPS Entrada" \`
     -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow -Profile Any
 
-  New-NetFirewallRule -DisplayName "Bloquear IP Suspeito" `
+  New-NetFirewallRule -DisplayName "Bloquear IP Suspeito" \`
     -Direction Inbound -RemoteAddress "203.0.113.0/24" -Action Block
 
-  New-NetFirewallRule -DisplayName "Permitir App Específico" `
+  New-NetFirewallRule -DisplayName "Permitir App Específico" \`
     -Direction Inbound -Program "C:\\Apps\\MeuApp\\app.exe" -Action Allow
 
   # Modificar e remover regras

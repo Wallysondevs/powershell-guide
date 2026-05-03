@@ -1,7 +1,31 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import powershell from "react-syntax-highlighter/dist/esm/languages/prism/powershell";
+import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
+import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
+import xml from "react-syntax-highlighter/dist/esm/languages/prism/markup";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
+import csharp from "react-syntax-highlighter/dist/esm/languages/prism/csharp";
+import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+import ini from "react-syntax-highlighter/dist/esm/languages/prism/ini";
+
+SyntaxHighlighter.registerLanguage("powershell", powershell);
+SyntaxHighlighter.registerLanguage("ps1", powershell);
+SyntaxHighlighter.registerLanguage("bash", bash);
+SyntaxHighlighter.registerLanguage("shell", bash);
+SyntaxHighlighter.registerLanguage("sh", bash);
+SyntaxHighlighter.registerLanguage("cmd", bash);
+SyntaxHighlighter.registerLanguage("json", json);
+SyntaxHighlighter.registerLanguage("xml", xml);
+SyntaxHighlighter.registerLanguage("html", xml);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
+SyntaxHighlighter.registerLanguage("yml", yaml);
+SyntaxHighlighter.registerLanguage("csharp", csharp);
+SyntaxHighlighter.registerLanguage("cs", csharp);
+SyntaxHighlighter.registerLanguage("sql", sql);
+SyntaxHighlighter.registerLanguage("ini", ini);
 
 interface CodeBlockProps {
   code: string;

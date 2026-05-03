@@ -116,9 +116,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Substituição múltipla
   $conteudo = Get-Content "template.html" -Raw
-  $conteudo = $conteudo `
-      -replace "{{EMPRESA}}",  "Minha Empresa Ltda" `
-      -replace "{{TELEFONE}}", "(11) 9999-8888" `
+  $conteudo = $conteudo \`
+      -replace "{{EMPRESA}}",  "Minha Empresa Ltda" \`
+      -replace "{{TELEFONE}}", "(11) 9999-8888" \`
       -replace "{{DATA}}",     (Get-Date -Format "dd/MM/yyyy")
   Set-Content "pagina.html" -Value $conteudo -Encoding UTF8
 

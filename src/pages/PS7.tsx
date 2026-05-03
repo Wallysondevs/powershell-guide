@@ -184,28 +184,28 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Web Cmdlets Melhorados</h2>
         <CodeBlock title="Invoke-RestMethod e Invoke-WebRequest no PS7" code={`# Invoke-RestMethod agora suporta autenticação OAuth, seguir redirects e mais
-  $resposta = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/PowerShell" `
-    -Headers @{ Accept = "application/vnd.github.v3+json" } `
+  $resposta = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/PowerShell" \`
+    -Headers @{ Accept = "application/vnd.github.v3+json" } \`
     -Method GET
   $resposta.name
   $resposta.stargazers_count
 
   # Paginação automática com -FollowRelLink (PS7)
-  $issues = Invoke-RestMethod `
-    -Uri "https://api.github.com/repos/PowerShell/PowerShell/issues?per_page=100" `
-    -FollowRelLink `
+  $issues = Invoke-RestMethod \`
+    -Uri "https://api.github.com/repos/PowerShell/PowerShell/issues?per_page=100" \`
+    -FollowRelLink \`
     -MaximumFollowRelLink 3   # Seguir até 3 páginas
 
   # POST com JSON body (PS7 serializa automaticamente)
   $body = @{ nome = "Teste"; valor = 42 } | ConvertTo-Json
-  Invoke-RestMethod -Uri "https://httpbin.org/post" `
-    -Method POST `
-    -Body $body `
+  Invoke-RestMethod -Uri "https://httpbin.org/post" \`
+    -Method POST \`
+    -Body $body \`
     -ContentType "application/json"
 
   # Download de arquivo com progresso
-  Invoke-WebRequest -Uri "https://example.com/arquivo.zip" `
-    -OutFile "C:\\Downloads\\arquivo.zip" `
+  Invoke-WebRequest -Uri "https://example.com/arquivo.zip" \`
+    -OutFile "C:\\Downloads\\arquivo.zip" \`
     -Resume   # Retomar download interrompido (PS7)
 
   # Skip verificação SSL (apenas para dev/test interno)

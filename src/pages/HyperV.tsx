@@ -35,20 +35,20 @@ import { PageContainer } from "@/components/layout/PageContainer";
   } | Format-Table -AutoSize
 
   # Criar nova VM (Geração 2 — UEFI, Secure Boot)
-  New-VM -Name "WebServer-Prod" `
-    -MemoryStartupBytes 4GB `
-    -NewVHDPath "D:\\VMs\\WebServer-Prod\\disk.vhdx" `
-    -NewVHDSizeBytes 80GB `
-    -Generation 2 `
+  New-VM -Name "WebServer-Prod" \`
+    -MemoryStartupBytes 4GB \`
+    -NewVHDPath "D:\\VMs\\WebServer-Prod\\disk.vhdx" \`
+    -NewVHDSizeBytes 80GB \`
+    -Generation 2 \`
     -SwitchName "External Switch"
 
   # Configurar CPU, memória dinâmica e configurações avançadas
   Set-VMProcessor -VMName "WebServer-Prod" -Count 4 -Reserve 20 -Maximum 100
-  Set-VMMemory -VMName "WebServer-Prod" `
-    -DynamicMemoryEnabled $true `
-    -MinimumBytes 2GB `
-    -StartupBytes 4GB `
-    -MaximumBytes 8GB `
+  Set-VMMemory -VMName "WebServer-Prod" \`
+    -DynamicMemoryEnabled $true \`
+    -MinimumBytes 2GB \`
+    -StartupBytes 4GB \`
+    -MaximumBytes 8GB \`
     -Buffer 20  # 20% de buffer adicional
 
   # Desabilitar Secure Boot (para Linux)
@@ -72,7 +72,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Snapshots e Checkpoints</h2>
         <CodeBlock title="Gerenciando checkpoints de forma segura" code={`# Criar checkpoint
-  Checkpoint-VM -Name "WebServer-Prod" `
+  Checkpoint-VM -Name "WebServer-Prod" \`
     -SnapshotName "Pre-Update-$(Get-Date -Format 'yyyyMMdd-HHmm')"
 
   # Listar checkpoints com tamanho
@@ -111,18 +111,18 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Gerenciamento de VHDX</h2>
         <CodeBlock title="Criando, redimensionando e otimizando discos virtuais" code={`# Criar VHDX de tamanho fixo (melhor performance)
-  New-VHD -Path "D:\\VMs\\dados.vhdx" `
-    -SizeBytes 100GB `
+  New-VHD -Path "D:\\VMs\\dados.vhdx" \`
+    -SizeBytes 100GB \`
     -Fixed
 
   # Criar VHDX de expansão dinâmica
-  New-VHD -Path "D:\\VMs\\backup.vhdx" `
-    -SizeBytes 500GB `
+  New-VHD -Path "D:\\VMs\\backup.vhdx" \`
+    -SizeBytes 500GB \`
     -Dynamic
 
   # Adicionar disco a VM existente
-  Add-VMHardDiskDrive -VMName "WebServer-Prod" `
-    -Path "D:\\VMs\\dados.vhdx" `
+  Add-VMHardDiskDrive -VMName "WebServer-Prod" \`
+    -Path "D:\\VMs\\dados.vhdx" \`
     -ControllerType SCSI
 
   # Expandir disco (enquanto VM está desligada)
@@ -147,11 +147,11 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Export-VM -Name "WebServer-Prod" -Path "D:\\Backups\\VMs"
 
   # Importar com novo ID (clone)
-  Import-VM `
-    -Path "D:\\Backups\\VMs\\WebServer-Prod\\WebServer-Prod.vmcx" `
-    -Copy `
-    -GenerateNewId `
-    -VhdDestinationPath "D:\\VMs\\WebServer-Clone" `
+  Import-VM \`
+    -Path "D:\\Backups\\VMs\\WebServer-Prod\\WebServer-Prod.vmcx" \`
+    -Copy \`
+    -GenerateNewId \`
+    -VhdDestinationPath "D:\\VMs\\WebServer-Clone" \`
     -VirtualMachinePath "D:\\VMs\\WebServer-Clone"
 
   # Script de backup automático de todas as VMs em execução
@@ -199,10 +199,10 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Enable-VMMigration -ComputerName "HV-Host01","HV-Host02"
   Set-VMMigrationNetwork -ComputerName "HV-Host01" -Subnet "10.10.10.0/24"
 
-  Move-VM -Name "WebServer-Prod" `
-    -ComputerName "HV-Host01" `
-    -DestinationHost "HV-Host02" `
-    -IncludeStorage `
+  Move-VM -Name "WebServer-Prod" \`
+    -ComputerName "HV-Host01" \`
+    -DestinationHost "HV-Host02" \`
+    -IncludeStorage \`
     -DestinationStoragePath "D:\\VMs"
 
   # Quick Migration (requer Cluster) — mesmo resultado, usa storage compartilhado

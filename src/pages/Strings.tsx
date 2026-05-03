@@ -34,9 +34,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
   "5 + 3 = $(5 + 3)"
 
   # Caracteres de escape com backtick (crase)
-  "Linha 1`nLinha 2"        # Quebra de linha
-  "Coluna1`tColuna2"        # Tab
-  "Isso é um `"aspas`""    # Aspas dentro de string com aspas duplas
+  "Linha 1\`nLinha 2"        # Quebra de linha
+  "Coluna1\`tColuna2"        # Tab
+  "Isso é um \`"aspas\`""    # Aspas dentro de string com aspas duplas
   `} />
 
         <h2>Here-Strings — Texto Multilinha</h2>

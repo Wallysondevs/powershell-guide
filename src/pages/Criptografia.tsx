@@ -166,26 +166,26 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Sort-Object NotAfter
 
   # Criar certificado autoassinado (para dev/test)
-  $cert = New-SelfSignedCertificate `
-    -DnsName "servidor01.empresa.local" `
-    -CertStoreLocation "Cert:\\LocalMachine\\My" `
-    -NotAfter (Get-Date).AddYears(2) `
+  $cert = New-SelfSignedCertificate \`
+    -DnsName "servidor01.empresa.local" \`
+    -CertStoreLocation "Cert:\\LocalMachine\\My" \`
+    -NotAfter (Get-Date).AddYears(2) \`
     -KeySpec Signature
 
   # Exportar certificado sem chave privada (distribuir para clientes)
-  Export-Certificate -Cert $cert `
-    -FilePath "C:\\Certs\\servidor01.cer" `
+  Export-Certificate -Cert $cert \`
+    -FilePath "C:\\Certs\\servidor01.cer" \`
     -Type CER
 
   # Exportar com chave privada (PFX — backup ou migração)
   $senha = Read-Host "Senha PFX" -AsSecureString
-  Export-PfxCertificate -Cert $cert `
-    -FilePath "C:\\Certs\\servidor01.pfx" `
+  Export-PfxCertificate -Cert $cert \`
+    -FilePath "C:\\Certs\\servidor01.pfx" \`
     -Password $senha
 
   # Importar PFX
-  Import-PfxCertificate -FilePath "C:\\Certs\\servidor01.pfx" `
-    -CertStoreLocation "Cert:\\LocalMachine\\My" `
+  Import-PfxCertificate -FilePath "C:\\Certs\\servidor01.pfx" \`
+    -CertStoreLocation "Cert:\\LocalMachine\\My" \`
     -Password $senha
 
   # Assinar script PowerShell com certificado de code signing

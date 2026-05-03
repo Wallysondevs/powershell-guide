@@ -31,27 +31,27 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Criar novo usuário
   $senha = ConvertTo-SecureString "Senha@2024!" -AsPlainText -Force
-  New-ADUser `
-    -Name "Carlos Rodrigues" `
-    -GivenName "Carlos" -Surname "Rodrigues" `
-    -SamAccountName "carlos.rodrigues" `
-    -UserPrincipalName "carlos.rodrigues@empresa.com" `
-    -Path "OU=Funcionarios,OU=TI,DC=empresa,DC=com" `
-    -AccountPassword $senha `
-    -Enabled $true `
-    -Department "TI" -Title "Desenvolvedor Pleno" `
-    -EmailAddress "carlos.rodrigues@empresa.com" `
-    -ChangePasswordAtLogon $true `
+  New-ADUser \`
+    -Name "Carlos Rodrigues" \`
+    -GivenName "Carlos" -Surname "Rodrigues" \`
+    -SamAccountName "carlos.rodrigues" \`
+    -UserPrincipalName "carlos.rodrigues@empresa.com" \`
+    -Path "OU=Funcionarios,OU=TI,DC=empresa,DC=com" \`
+    -AccountPassword $senha \`
+    -Enabled $true \`
+    -Department "TI" -Title "Desenvolvedor Pleno" \`
+    -EmailAddress "carlos.rodrigues@empresa.com" \`
+    -ChangePasswordAtLogon $true \`
     -PassThru
 
   # Modificar usuário
-  Set-ADUser -Identity "carlos.rodrigues" `
-    -Department "Engenharia" `
-    -Title "Desenvolvedor Sênior" `
+  Set-ADUser -Identity "carlos.rodrigues" \`
+    -Department "Engenharia" \`
+    -Title "Desenvolvedor Sênior" \`
     -Replace @{ telephoneNumber = "+55 11 99999-0000"; l = "São Paulo" }
 
   # Redefinir senha e forçar troca
-  Set-ADAccountPassword -Identity "carlos.rodrigues" `
+  Set-ADAccountPassword -Identity "carlos.rodrigues" \`
     -NewPassword (ConvertTo-SecureString "NovaSenha@2024!" -AsPlainText -Force) -Reset
   Set-ADUser -Identity "carlos.rodrigues" -ChangePasswordAtLogon $true
 
@@ -64,16 +64,16 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Grupos</h2>
         <CodeBlock title="Gerenciamento de grupos de segurança e distribuição" code={`# Criar grupo de segurança global
-  New-ADGroup -Name "GRP-TI-Devs" `
-    -GroupScope Global `
-    -GroupCategory Security `
-    -Path "OU=Grupos,DC=empresa,DC=com" `
+  New-ADGroup -Name "GRP-TI-Devs" \`
+    -GroupScope Global \`
+    -GroupCategory Security \`
+    -Path "OU=Grupos,DC=empresa,DC=com" \`
     -Description "Desenvolvedores de TI"
 
   # Criar grupo de distribuição (para e-mail)
-  New-ADGroup -Name "DL-TI-Todos" `
-    -GroupScope Universal `
-    -GroupCategory Distribution `
+  New-ADGroup -Name "DL-TI-Todos" \`
+    -GroupScope Universal \`
+    -GroupCategory Distribution \`
     -Path "OU=Grupos,DC=empresa,DC=com"
 
   # Adicionar e remover membros
@@ -118,17 +118,17 @@ import { PageContainer } from "@/components/layout/PageContainer";
   }
 
   # Mover objeto para outra OU
-  Move-ADObject `
-    -Identity "CN=carlos.rodrigues,OU=TI,OU=Funcionarios,DC=empresa,DC=com" `
+  Move-ADObject \`
+    -Identity "CN=carlos.rodrigues,OU=TI,OU=Funcionarios,DC=empresa,DC=com" \`
     -TargetPath "OU=Engenharia,OU=Funcionarios,DC=empresa,DC=com"
 
   # Proteger OU contra exclusão acidental
-  Set-ADOrganizationalUnit -Identity "OU=TI,DC=empresa,DC=com" `
+  Set-ADOrganizationalUnit -Identity "OU=TI,DC=empresa,DC=com" \`
     -ProtectedFromAccidentalDeletion $true
 
   # Renomear OU
-  Rename-ADObject `
-    -Identity "OU=TI,DC=empresa,DC=com" `
+  Rename-ADObject \`
+    -Identity "OU=TI,DC=empresa,DC=com" \`
     -NewName "TI-Engenharia"
   `} />
 
@@ -139,9 +139,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
   # Em lab: Add-KdsRootKey -EffectiveTime ((Get-Date).AddHours(-10))
 
   # Criar gMSA
-  New-ADServiceAccount `
-    -Name "svc-webapp" `
-    -DNSHostName "svc-webapp.empresa.com" `
+  New-ADServiceAccount \`
+    -Name "svc-webapp" \`
+    -DNSHostName "svc-webapp.empresa.com" \`
     -PrincipalsAllowedToRetrieveManagedPassword "GRP-WebServers"  # Grupo de servidores que podem usar
 
   # Instalar gMSA no servidor
@@ -150,8 +150,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Usar gMSA em um serviço Windows (via SC ou New-Service)
   # Na senha, use '$' no final do nome da conta e deixe a senha em branco
-  New-Service -Name "MeuWebApp" `
-    -BinaryPathName "C:\\Apps\\WebApp\\service.exe" `
+  New-Service -Name "MeuWebApp" \`
+    -BinaryPathName "C:\\Apps\\WebApp\\service.exe" \`
     -Credential (New-Object PSCredential("EMPRESA\\svc-webapp$", (New-Object System.Security.SecureString)))
   `} />
 
@@ -162,7 +162,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Computadores não logados há 90 dias (candidatos a desativação)
   $limite = (Get-Date).AddDays(-90)
-  $inativos = Get-ADComputer -Filter { LastLogonDate -lt $limite -and Enabled -eq $true } `
+  $inativos = Get-ADComputer -Filter { LastLogonDate -lt $limite -and Enabled -eq $true } \`
       -Properties LastLogonDate, OperatingSystem |
       Select-Object Name, LastLogonDate, OperatingSystem |
       Sort-Object LastLogonDate
@@ -171,13 +171,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
   Write-Host "Computadores inativos: $($inativos.Count)"
 
   # Mover computador para OU correta
-  Move-ADObject `
-    -Identity "CN=WS-TI-001,CN=Computers,DC=empresa,DC=com" `
+  Move-ADObject \`
+    -Identity "CN=WS-TI-001,CN=Computers,DC=empresa,DC=com" \`
     -TargetPath "OU=Computadores,OU=TI,DC=empresa,DC=com"
 
   # Pre-criar conta de computador (para juntar ao domínio depois)
-  New-ADComputer -Name "WS-NOVO-001" `
-    -Path "OU=Computadores,OU=TI,DC=empresa,DC=com" `
+  New-ADComputer -Name "WS-NOVO-001" \`
+    -Path "OU=Computadores,OU=TI,DC=empresa,DC=com" \`
     -Enabled $true
 
   # Redefinir conta de computador (resolver problemas de canal seguro)
@@ -187,14 +187,14 @@ import { PageContainer } from "@/components/layout/PageContainer";
         <h2>Relatórios, Auditoria e Importação em Massa</h2>
         <CodeBlock title="Relatórios de segurança, compliance e onboarding" code={`# Contas inativas (sem login há 90+ dias)
   $limite = (Get-Date).AddDays(-90)
-  Get-ADUser -Filter { LastLogonDate -lt $limite -and Enabled -eq $true } `
+  Get-ADUser -Filter { LastLogonDate -lt $limite -and Enabled -eq $true } \`
     -Properties LastLogonDate, Department |
     Select-Object Name, SamAccountName, LastLogonDate, Department |
     Sort-Object LastLogonDate |
     Export-Csv "contas-inativas.csv" -NoTypeInformation -Encoding UTF8
 
   # Contas com senha que nunca expira (risco de segurança)
-  Get-ADUser -Filter { PasswordNeverExpires -eq $true -and Enabled -eq $true } `
+  Get-ADUser -Filter { PasswordNeverExpires -eq $true -and Enabled -eq $true } \`
     -Properties PasswordNeverExpires, Department, PasswordLastSet |
     Select-Object Name, SamAccountName, Department, PasswordLastSet |
     Export-Csv "senha-nao-expira.csv" -NoTypeInformation
@@ -205,15 +205,15 @@ import { PageContainer } from "@/components/layout/PageContainer";
   foreach ($u in $usuarios) {
       $senha = ConvertTo-SecureString "BemVindo@$(Get-Date -Format 'yyyy')!" -AsPlainText -Force
       try {
-          New-ADUser `
-            -Name "$($u.Nome) $($u.Sobrenome)" `
-            -SamAccountName $u.Login `
-            -UserPrincipalName "$($u.Login)@empresa.com" `
-            -Department $u.Departamento `
-            -Title $u.Cargo `
-            -Path $u.OU `
-            -AccountPassword $senha `
-            -Enabled $true `
+          New-ADUser \`
+            -Name "$($u.Nome) $($u.Sobrenome)" \`
+            -SamAccountName $u.Login \`
+            -UserPrincipalName "$($u.Login)@empresa.com" \`
+            -Department $u.Departamento \`
+            -Title $u.Cargo \`
+            -Path $u.OU \`
+            -AccountPassword $senha \`
+            -Enabled $true \`
             -ChangePasswordAtLogon $true
           Write-Host "✔ Criado: $($u.Login)" -ForegroundColor Green
       } catch {
@@ -222,7 +222,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
   }
 
   # Relatório completo do AD — usuários com grupos e último login
-  Get-ADUser -Filter { Enabled -eq $true } `
+  Get-ADUser -Filter { Enabled -eq $true } \`
     -Properties MemberOf, LastLogonDate, Department, Title |
     Select-Object Name, SamAccountName, Department, Title, LastLogonDate,
       @{N="Grupos"; E={ ($_.MemberOf | ForEach-Object {

@@ -62,13 +62,13 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Criar VM
   $adminCred = Get-Credential "adminPS"
-  New-AzVM `
-    -ResourceGroupName "RG-Producao" `
-    -Name "VM-WebServer" `
-    -Location "brazilsouth" `
-    -Image "Win2022Datacenter" `
-    -Size "Standard_B2s" `
-    -Credential $adminCred `
+  New-AzVM \`
+    -ResourceGroupName "RG-Producao" \`
+    -Name "VM-WebServer" \`
+    -Location "brazilsouth" \`
+    -Image "Win2022Datacenter" \`
+    -Size "Standard_B2s" \`
+    -Credential $adminCred \`
     -OpenPorts 80, 443, 3389
 
   # Iniciar, parar e desalocar VMs
@@ -90,12 +90,12 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Storage Account</h2>
         <CodeBlock title="Gerenciando blobs, filas e tabelas" code={`# Criar Storage Account
-  New-AzStorageAccount `
-    -ResourceGroupName "RG-Producao" `
-    -Name "storageempresa2024" `
-    -Location "brazilsouth" `
-    -SkuName "Standard_LRS" `
-    -Kind StorageV2 `
+  New-AzStorageAccount \`
+    -ResourceGroupName "RG-Producao" \`
+    -Name "storageempresa2024" \`
+    -Location "brazilsouth" \`
+    -SkuName "Standard_LRS" \`
+    -Kind StorageV2 \`
     -AccessTier Hot
 
   # Obter contexto de storage
@@ -105,15 +105,15 @@ import { PageContainer } from "@/components/layout/PageContainer";
   New-AzStorageContainer -Name "backups" -Context $ctx -Permission Off
 
   # Upload de arquivo
-  Set-AzStorageBlobContent -Container "backups" `
-    -File "C:\\Temp\\backup.zip" `
-    -Blob "2025/01/backup.zip" `
+  Set-AzStorageBlobContent -Container "backups" \`
+    -File "C:\\Temp\\backup.zip" \`
+    -Blob "2025/01/backup.zip" \`
     -Context $ctx
 
   # Download de arquivo
-  Get-AzStorageBlobContent -Container "backups" `
-    -Blob "2025/01/backup.zip" `
-    -Destination "C:\\Restaurado" `
+  Get-AzStorageBlobContent -Container "backups" \`
+    -Blob "2025/01/backup.zip" \`
+    -Destination "C:\\Restaurado" \`
     -Context $ctx
 
   # Listar blobs
@@ -121,12 +121,12 @@ import { PageContainer } from "@/components/layout/PageContainer";
       Select-Object Name, Length, LastModified | Format-Table
 
   # Gerar SAS URL temporária (validade 1 hora)
-  $sas = New-AzStorageBlobSASToken `
-    -Container "backups" `
-    -Blob "2025/01/backup.zip" `
-    -Permission r `
-    -ExpiryTime (Get-Date).AddHours(1) `
-    -Context $ctx `
+  $sas = New-AzStorageBlobSASToken \`
+    -Container "backups" \`
+    -Blob "2025/01/backup.zip" \`
+    -Permission r \`
+    -ExpiryTime (Get-Date).AddHours(1) \`
+    -Context $ctx \`
     -FullUri
   Write-Host "URL de acesso (1h): $sas"
 
@@ -139,33 +139,33 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
         <h2>Redes e Segurança</h2>
         <CodeBlock title="VNets, NSGs e firewall" code={`# Criar Virtual Network e subnet
-  $vnet = New-AzVirtualNetwork `
-    -Name "VNET-Producao" `
-    -ResourceGroupName "RG-Producao" `
-    -Location "brazilsouth" `
+  $vnet = New-AzVirtualNetwork \`
+    -Name "VNET-Producao" \`
+    -ResourceGroupName "RG-Producao" \`
+    -Location "brazilsouth" \`
     -AddressPrefix "10.0.0.0/16"
 
-  Add-AzVirtualNetworkSubnetConfig `
-    -Name "Subnet-Web" `
-    -VirtualNetwork $vnet `
+  Add-AzVirtualNetworkSubnetConfig \`
+    -Name "Subnet-Web" \`
+    -VirtualNetwork $vnet \`
     -AddressPrefix "10.0.1.0/24"
   $vnet | Set-AzVirtualNetwork
 
   # Criar Network Security Group com regras
-  $nsg = New-AzNetworkSecurityGroup `
-    -Name "NSG-Web" `
-    -ResourceGroupName "RG-Producao" `
+  $nsg = New-AzNetworkSecurityGroup \`
+    -Name "NSG-Web" \`
+    -ResourceGroupName "RG-Producao" \`
     -Location "brazilsouth"
 
-  $nsg | Add-AzNetworkSecurityRuleConfig `
-    -Name "Allow-HTTPS" `
-    -Direction Inbound `
-    -Priority 100 `
-    -Protocol Tcp `
-    -SourceAddressPrefix Internet `
-    -SourcePortRange "*" `
-    -DestinationAddressPrefix "*" `
-    -DestinationPortRange 443 `
+  $nsg | Add-AzNetworkSecurityRuleConfig \`
+    -Name "Allow-HTTPS" \`
+    -Direction Inbound \`
+    -Priority 100 \`
+    -Protocol Tcp \`
+    -SourceAddressPrefix Internet \`
+    -SourcePortRange "*" \`
+    -DestinationAddressPrefix "*" \`
+    -DestinationPortRange 443 \`
     -Access Allow | Set-AzNetworkSecurityGroup
 
   # Listar IPs públicos
@@ -180,21 +180,21 @@ import { PageContainer } from "@/components/layout/PageContainer";
 
   # Atribuir função a usuário (Contributor no Resource Group)
   $usuario = Get-AzADUser -UserPrincipalName "carlos@empresa.com"
-  New-AzRoleAssignment `
-    -ObjectId $usuario.Id `
-    -RoleDefinitionName "Contributor" `
+  New-AzRoleAssignment \`
+    -ObjectId $usuario.Id \`
+    -RoleDefinitionName "Contributor" \`
     -ResourceGroupName "RG-Producao"
 
   # Atribuir função a Service Principal (automação)
   $sp = Get-AzADServicePrincipal -DisplayName "CI-CD-Pipeline"
-  New-AzRoleAssignment `
-    -ObjectId $sp.Id `
-    -RoleDefinitionName "Reader" `
+  New-AzRoleAssignment \`
+    -ObjectId $sp.Id \`
+    -RoleDefinitionName "Reader" \`
     -Scope "/subscriptions/$((Get-AzContext).Subscription.Id)"
 
   # Remover atribuição
-  Remove-AzRoleAssignment -ObjectId $usuario.Id `
-    -RoleDefinitionName "Contributor" `
+  Remove-AzRoleAssignment -ObjectId $usuario.Id \`
+    -RoleDefinitionName "Contributor" \`
     -ResourceGroupName "RG-Producao"
 
   # Azure Policy — verificar conformidade
