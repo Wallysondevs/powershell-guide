@@ -46,6 +46,22 @@ const NAVIGATION = [
       { path: "/filtros", label: "Filtros e Seleção", icon: Filter },
       { path: "/formatacao", label: "Formatação e Exportação", icon: FileText },
       { path: "/regex", label: "Expressões Regulares", icon: Search },
+      { path: "/splatting", label: "Splatting (@hash)", icon: Box },
+    ]
+  },
+  {
+    title: "Terminal e UX",
+    items: [
+      { path: "/psreadline", label: "PSReadLine", icon: Terminal },
+      { path: "/psstyle", label: "$PSStyle e ANSI", icon: Monitor },
+      { path: "/argument-completers", label: "Argument Completers", icon: Search },
+      { path: "/update-help", label: "Update-Help / Save-Help", icon: BookOpen },
+    ]
+  },
+  {
+    title: "Provedores (PSDrives)",
+    items: [
+      { path: "/psdrives", label: "PSProviders / PSDrives", icon: FolderOpen },
     ]
   },
   {
@@ -120,6 +136,7 @@ const NAVIGATION = [
     items: [
       { path: "/remoting", label: "PowerShell Remoting", icon: Server },
       { path: "/jobs", label: "Jobs e Paralelismo", icon: Workflow },
+      { path: "/threadjob", label: "ThreadJob / -Parallel", icon: Zap },
     ]
   },
   {
@@ -240,7 +257,7 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
 
             <div className="px-3 pt-4 pb-2 border-t border-border/40">
               <p className="text-[10px] text-muted-foreground/60 font-mono leading-relaxed">
-                66 capítulos · pt-BR · sem dependência externa
+                73 capítulos · pt-BR · sem dependência externa
               </p>
             </div>
           </nav>

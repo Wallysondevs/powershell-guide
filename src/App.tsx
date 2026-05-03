@@ -74,6 +74,13 @@ const Perfil = lazy(() => import("@/pages/Perfil"));
 const Dicas = lazy(() => import("@/pages/Dicas"));
 const Referencias = lazy(() => import("@/pages/Referencias"));
 const RefRapida = lazy(() => import("@/pages/RefRapida"));
+const PSReadLine = lazy(() => import("@/pages/PSReadLine"));
+const Splatting = lazy(() => import("@/pages/Splatting"));
+const ArgumentCompleters = lazy(() => import("@/pages/ArgumentCompleters"));
+const PSStyle = lazy(() => import("@/pages/PSStyle"));
+const ThreadJob = lazy(() => import("@/pages/ThreadJob"));
+const PSDrives = lazy(() => import("@/pages/PSDrives"));
+const UpdateHelp = lazy(() => import("@/pages/UpdateHelp"));
 
 const queryClient = new QueryClient();
 
@@ -181,6 +188,13 @@ function Router() {
           <Route path="/dicas" component={Dicas} />
           <Route path="/referencias" component={Referencias} />
           <Route path="/ref-rapida" component={RefRapida} />
+          <Route path="/psreadline" component={PSReadLine} />
+          <Route path="/splatting" component={Splatting} />
+          <Route path="/argument-completers" component={ArgumentCompleters} />
+          <Route path="/psstyle" component={PSStyle} />
+          <Route path="/threadjob" component={ThreadJob} />
+          <Route path="/psdrives" component={PSDrives} />
+          <Route path="/update-help" component={UpdateHelp} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>
