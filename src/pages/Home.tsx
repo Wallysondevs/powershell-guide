@@ -2,232 +2,335 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import { AlertBox } from "@/components/ui/AlertBox";
 import { motion } from "framer-motion";
-import { 
-  Terminal, 
-  BookOpen, 
-  Settings, 
-  Code2, 
-  HelpCircle, 
+import {
+  Terminal,
+  BookOpen,
+  Settings,
+  Code2,
   ChevronRight,
   Cpu,
   Globe,
   Shield,
-  Layers
+  Layers,
+  Sparkles,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import { Link } from "wouter";
 
-export default function Home() {
-  const categories = [
-    {
-      title: "Fundamentos",
-      icon: <Terminal className="w-6 h-6" />,
-      description: "História, instalação e primeiros passos no terminal.",
-      links: [
-        { name: "História e Conceitos", href: "/historia" },
-        { name: "Instalação", href: "/instalacao" },
-        { name: "Primeiros Passos", href: "/primeiros-passos" },
-        { name: "Sistema de Ajuda", href: "/ajuda" },
-      ]
-    },
-    {
-      title: "Linguagem",
-      icon: <Code2 className="w-6 h-6" />,
-      description: "Variáveis, operadores, tipos de dados e lógica.",
-      links: [
-        { name: "Variáveis e Escopo", href: "/variaveis" },
-        { name: "Operadores", href: "/operadores" },
-        { name: "Manipulação de Strings", href: "/strings" },
-        { name: "Arrays e Coleções", href: "/arrays" },
-        { name: "Hashtables", href: "/hashtables" },
-      ]
-    },
-    {
-      title: "Pipeline e Objetos",
-      icon: <Layers className="w-6 h-6" />,
-      description: "O poder do pipeline e processamento de objetos.",
-      links: [
-        { name: "Entendendo o Pipeline", href: "/pipeline" },
-        { name: "Filtros e Seleção", href: "/filtros" },
-        { name: "Formatação e Saída", href: "/formatacao" },
-      ]
-    },
-    {
-      title: "Sistema de Arquivos",
-      icon: <BookOpen className="w-6 h-6" />,
-      description: "Navegação, gerenciamento de arquivos e permissões.",
-      links: [
-        { name: "Navegação", href: "/navegacao" },
-        { name: "Manipulação de Arquivos", href: "/arquivos" },
-        { name: "Conteúdo de Arquivos", href: "/conteudo-arquivos" },
-        { name: "Permissões ACL", href: "/permissoes" },
-      ]
-    },
-    {
-      title: "Administração",
-      icon: <Settings className="w-6 h-6" />,
-      description: "Processos, serviços, usuários e agendamentos.",
-      links: [
-        { name: "Processos", href: "/processos" },
-        { name: "Serviços", href: "/servicos" },
-        { name: "Usuários e Grupos", href: "/usuarios" },
-        { name: "Tarefas Agendadas", href: "/agendamento" },
-      ]
-    },
-    {
-      title: "Rede e Web",
-      icon: <Globe className="w-6 h-6" />,
-      description: "Diagnóstico de rede e consumo de APIs REST.",
-      links: [
-        { name: "Comandos de Rede", href: "/rede" },
-        { name: "Trabalhando com Web APIs", href: "/web-api" },
-      ]
-    },
-    {
-      title: "Automação Profissional",
-      icon: <Shield className="w-6 h-6" />,
-      description: "Tratamento de erros, módulos e segurança.",
-      links: [
-        { name: "Tratamento de Erros", href: "/erros" },
-        { name: "Módulos", href: "/modulos" },
-        { name: "Scripts e Segurança", href: "/scripts" },
-      ]
-    },
-    {
-      title: "Recursos Avançados",
-      icon: <Cpu className="w-6 h-6" />,
-      description: "Registro, WMI/CIM e gerenciamento de pacotes.",
-      links: [
-        { name: "Registro do Windows", href: "/registro" },
-        { name: "WMI e CIM", href: "/wmi-cim" },
-        { name: "Gerenciamento de Pacotes", href: "/pacotes" },
-      ]
-    }
-  ];
+const categories = [
+  {
+    title: "Fundamentos",
+    icon: Terminal,
+    description: "História, instalação e primeiros passos no terminal.",
+    links: [
+      { name: "História e Conceitos", href: "/historia" },
+      { name: "Instalação", href: "/instalacao" },
+      { name: "Primeiros Passos", href: "/primeiros-passos" },
+      { name: "Sistema de Ajuda", href: "/ajuda" },
+    ],
+  },
+  {
+    title: "Linguagem",
+    icon: Code2,
+    description: "Variáveis, operadores, tipos de dados e lógica.",
+    links: [
+      { name: "Variáveis e Escopo", href: "/variaveis" },
+      { name: "Operadores", href: "/operadores" },
+      { name: "Manipulação de Strings", href: "/strings" },
+      { name: "Arrays e Coleções", href: "/arrays" },
+      { name: "Hashtables", href: "/hashtables" },
+    ],
+  },
+  {
+    title: "Pipeline e Objetos",
+    icon: Layers,
+    description: "O poder do pipeline e processamento de objetos.",
+    links: [
+      { name: "Entendendo o Pipeline", href: "/pipeline" },
+      { name: "Filtros e Seleção", href: "/filtros" },
+      { name: "Formatação e Saída", href: "/formatacao" },
+    ],
+  },
+  {
+    title: "Sistema de Arquivos",
+    icon: BookOpen,
+    description: "Navegação, gerenciamento de arquivos e permissões.",
+    links: [
+      { name: "Navegação", href: "/navegacao" },
+      { name: "Manipulação de Arquivos", href: "/arquivos" },
+      { name: "Conteúdo de Arquivos", href: "/conteudo-arquivos" },
+      { name: "Permissões ACL", href: "/permissoes" },
+    ],
+  },
+  {
+    title: "Administração",
+    icon: Settings,
+    description: "Processos, serviços, usuários e agendamentos.",
+    links: [
+      { name: "Processos", href: "/processos" },
+      { name: "Serviços", href: "/servicos" },
+      { name: "Usuários e Grupos", href: "/usuarios" },
+      { name: "Tarefas Agendadas", href: "/agendamento" },
+    ],
+  },
+  {
+    title: "Rede e Web",
+    icon: Globe,
+    description: "Diagnóstico de rede e consumo de APIs REST.",
+    links: [
+      { name: "Comandos de Rede", href: "/rede" },
+      { name: "Trabalhando com Web APIs", href: "/web-api" },
+    ],
+  },
+  {
+    title: "Automação Profissional",
+    icon: Shield,
+    description: "Tratamento de erros, módulos e segurança.",
+    links: [
+      { name: "Tratamento de Erros", href: "/erros" },
+      { name: "Módulos", href: "/modulos" },
+      { name: "Scripts e Segurança", href: "/scripts" },
+    ],
+  },
+  {
+    title: "Recursos Avançados",
+    icon: Cpu,
+    description: "Registro, WMI/CIM e gerenciamento de pacotes.",
+    links: [
+      { name: "Registro do Windows", href: "/registro" },
+      { name: "WMI e CIM", href: "/wmi-cim" },
+      { name: "Gerenciamento de Pacotes", href: "/pacotes" },
+    ],
+  },
+];
 
+const stats = [
+  { label: "Capítulos", value: "66" },
+  { label: "Exemplos prontos", value: "500+" },
+  { label: "Idioma", value: "PT-BR" },
+  { label: "Dependência externa", value: "0" },
+];
+
+export default function Home() {
   return (
     <PageContainer
-      title="Guia Definitivo do PowerShell"
-      subtitle="Domine a automação de sistemas com o shell mais poderoso do mercado. Do básico ao avançado."
+      title=""
+      subtitle=""
     >
-      <section className="mb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Terminal className="text-primary" /> Por que PowerShell?
-            </h3>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Diferente de shells tradicionais baseados em texto (como Bash ou CMD), o PowerShell é baseado em <strong>objetos</strong>. 
-              Isso significa que, ao invés de manipular strings complexas, você lida com estruturas de dados ricas, 
-              tornando a automação muito mais robusta e menos propensa a erros.
+      {/* HERO */}
+      <section className="relative -mt-12 mb-20">
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 backdrop-blur-sm p-8 sm:p-12 lg:p-16">
+          {/* Background mesh */}
+          <div
+            className="absolute inset-0 -z-10 opacity-90"
+            style={{
+              background: `
+                radial-gradient(ellipse 600px 400px at 20% 30%, hsl(195 100% 50% / 0.20), transparent 60%),
+                radial-gradient(ellipse 500px 350px at 90% 80%, hsl(270 80% 65% / 0.18), transparent 60%),
+                radial-gradient(ellipse 400px 300px at 60% 10%, hsl(195 100% 60% / 0.10), transparent 60%)
+              `,
+            }}
+          />
+          {/* Subtle grid overlay */}
+          <div
+            className="absolute inset-0 -z-10 opacity-[0.04]"
+            style={{
+              backgroundImage:
+                "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+              maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent)",
+            }}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-mono font-semibold text-primary uppercase tracking-wider">
+                Guia Definitivo · PT-BR
+              </span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-6 mt-0 pb-0 border-0">
+              Domine o{" "}
+              <span className="bg-gradient-to-r from-primary via-cyan-300 to-secondary bg-clip-text text-transparent text-glow-primary">
+                PowerShell
+              </span>
+              <br />
+              do básico ao{" "}
+              <span className="font-mono text-primary cursor-blink">avançado</span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl mb-8">
+              66 capítulos com exemplos prontos para colar no terminal.
+              Aprenda automação de sistemas com o shell mais poderoso do mercado —
+              do <code>Get-Process</code> ao Active Directory, Azure e CI/CD.
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-primary" /> Integração profunda com .NET
-              </li>
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-primary" /> Multiplataforma (Windows, Linux, macOS)
-              </li>
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-primary" /> Consistência incrível de comandos (Verbo-Substantivo)
-              </li>
+
+            <div className="flex flex-wrap gap-3 mb-10">
+              <Link href="/historia">
+                <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5">
+                  Começar a ler
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </Link>
+              <Link href="/ref-rapida">
+                <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold border border-border bg-card/50 hover:bg-card hover:border-primary/40 transition-all">
+                  <Zap className="w-4 h-4 text-primary" />
+                  Referência rápida
+                </button>
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/40">
+              {stats.map((s) => (
+                <div key={s.label}>
+                  <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground tracking-tight">
+                    {s.value}
+                  </div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1 font-medium">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* WHY POWERSHELL + HOW TO USE */}
+      <section className="mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+          <div className="card-premium p-7">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                <Terminal className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mt-0 mb-0 pb-0 border-0">Por que PowerShell?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Diferente de shells tradicionais baseados em texto (Bash, CMD), o PowerShell é baseado em{" "}
+              <strong className="text-foreground">objetos</strong>. Ao invés de manipular strings, você lida com
+              estruturas ricas, tornando a automação mais robusta.
+            </p>
+            <ul className="space-y-1.5 text-sm">
+              <li>Integração profunda com .NET</li>
+              <li>Multiplataforma (Windows, Linux, macOS)</li>
+              <li>Convenção Verbo-Substantivo previsível</li>
             </ul>
           </div>
-          <div className="bg-accent/5 border border-accent/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <HelpCircle className="text-accent" /> Como usar este guia?
-            </h3>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Este material foi estruturado para ser tanto um curso sequencial quanto uma referência rápida. 
-              Cada página contém exemplos práticos que você pode copiar e colar diretamente no seu terminal.
+
+          <div className="card-premium p-7">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-secondary/15 border border-secondary/25 flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-secondary" />
+              </div>
+              <h3 className="text-xl font-bold mt-0 mb-0 pb-0 border-0">Como usar este guia?</h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              Estruturado tanto como curso sequencial quanto referência rápida. Cada página traz exemplos
+              prontos para colar no terminal — comece pelo básico ou pule direto para o tópico que precisa.
             </p>
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-green-500/10 text-green-400 border border-green-500/20 rounded-full text-xs font-medium">Iniciante</span>
-              <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full text-xs font-medium">Intermediário</span>
-              <span className="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full text-xs font-medium">Avançado</span>
+              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Iniciante</span>
+              <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Intermediário</span>
+              <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Avançado</span>
             </div>
           </div>
         </div>
 
-        <AlertBox type="info" title="Dica de Ouro">
-          O PowerShell não é apenas um shell, é um motor de automação. Se você faz algo mais de duas vezes manualmente, existe um cmdlet para automatizar isso.
+        <AlertBox type="tip" title="Dica de Ouro">
+          O PowerShell não é apenas um shell — é um motor de automação. Se você faz algo manualmente mais de duas vezes,
+          existe um cmdlet que faz isso por você.
         </AlertBox>
       </section>
 
-      <section className="mb-16">
-        <h2 className="text-3xl font-bold mb-8">Navegue pelas Categorias</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              viewport={{ once: true }}
-              className="group p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-300 shadow-sm"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  {cat.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold mb-2">{cat.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{cat.description}</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                    {cat.links.map((link, li) => (
-                      <Link 
-                        key={li} 
-                        to={link.href}
-                        className="text-sm text-primary hover:underline flex items-center gap-1"
-                      >
-                        <ChevronRight className="w-3 h-3" /> {link.name}
-                      </Link>
-                    ))}
+      {/* CATEGORIES */}
+      <section className="mb-20">
+        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold mt-0 mb-2 pb-0 border-0 tracking-tight">
+              Navegue pelas categorias
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {categories.length} áreas temáticas · explore livremente
+            </p>
+          </div>
+          <span className="prompt-tag">
+            <span className="opacity-70">PS&gt;</span> ls ./capitulos
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {categories.map((cat, i) => {
+            const Icon = cat.icon;
+            return (
+              <motion.div
+                key={cat.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.35 }}
+                viewport={{ once: true, margin: "-50px" }}
+                className="card-premium p-6 group"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/50 transition-all shrink-0">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold mt-0 mb-1 pb-0 border-0 tracking-tight">{cat.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{cat.description}</p>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 pt-4 border-t border-border/40">
+                  {cat.links.map((link) => (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 group/link no-underline py-0.5"
+                    >
+                      <ChevronRight className="w-3 h-3 text-primary/50 group-hover/link:text-primary group-hover/link:translate-x-0.5 transition-all" />
+                      <span className="truncate">{link.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </section>
 
-      <section className="mb-16 bg-[#1e1e1e] rounded-3xl p-8 border border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-10">
-          <Terminal size={120} />
+      {/* TRY NOW */}
+      <section className="mb-16">
+        <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold mt-0 mb-2 pb-0 border-0 tracking-tight">
+              Experimente agora
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Abra seu terminal, cole e veja o resultado.
+            </p>
+          </div>
         </div>
-        <div className="relative z-10">
-          <h2 className="text-3xl font-bold mb-4">Experimente Agora</h2>
-          <p className="text-gray-400 mb-6 max-w-2xl">
-            Abra seu terminal e digite este comando para ver a versão instalada e começar sua jornada.
-          </p>
-          <CodeBlock
-            title="Verificando a versão do PowerShell"
-            code={`# Mostra informações detalhadas sobre a versão do PowerShell
+        <CodeBlock
+          title="primeiros-comandos.ps1"
+          code={`# Mostra informações detalhadas sobre a versão do PowerShell
 $PSVersionTable
 
-# Tente também listar os processos que mais consomem memória
-Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 5
-`}
-          />
-        </div>
-      </section>
+# Top 5 processos que mais consomem memória
+Get-Process |
+  Sort-Object WorkingSet64 -Descending |
+  Select-Object -First 5 Name, Id, @{N='RAM (MB)'; E={[math]::Round($_.WorkingSet64/1MB, 2)}}
 
-      <section className="mb-8">
-        <h2 className="text-3xl font-bold mb-6">Próximos Passos</h2>
-        <p className="text-muted-foreground leading-relaxed mb-6">
-          Se você é novo no PowerShell, recomendamos começar pela seção de <strong>História</strong> para entender a diferença entre o Windows PowerShell (5.1) e o PowerShell moderno (7+), e depois seguir para a <strong>Instalação</strong>.
-        </p>
-        <div className="flex gap-4">
-          <Link to="/historia">
-            <button className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-bold hover:opacity-90 transition-opacity">
-              Começar a Ler
-            </button>
-          </Link>
-          <Link to="/dicas">
-            <button className="px-6 py-3 bg-secondary text-secondary-foreground rounded-full font-bold hover:opacity-90 transition-opacity">
-              Dicas Rápidas
-            </button>
-          </Link>
-        </div>
+# E o melhor: tudo isso são objetos .NET, não texto
+(Get-Process)[0] | Get-Member | Select-Object -First 10
+`}
+        />
       </section>
     </PageContainer>
   );

@@ -43,30 +43,53 @@ export function CodeBlock({ code, language = "powershell", title }: CodeBlockPro
   };
 
   return (
-    <div className="my-6 rounded-xl overflow-hidden bg-[#1e1e1e] border border-border shadow-lg">
-      <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+    <div className="my-6 rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 bg-[#0b0d14] relative group">
+      {/* Subtle gradient halo on hover */}
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+        style={{
+          background: 'radial-gradient(800px 200px at 50% -10%, hsl(195 100% 60% / 0.08), transparent 60%)'
+        }}
+      />
+      <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-b from-[#1a1d2a] to-[#13161f] border-b border-white/5 relative">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex gap-1.5 shrink-0">
+            <div className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-inner shadow-black/30" />
+            <div className="w-3 h-3 rounded-full bg-[#febc2e] shadow-inner shadow-black/30" />
+            <div className="w-3 h-3 rounded-full bg-[#28c840] shadow-inner shadow-black/30" />
           </div>
-          {title && <span className="ml-2 text-xs font-mono text-gray-400">{title}</span>}
-          {!title && <span className="ml-2 text-xs font-mono text-gray-500 lowercase">{language}</span>}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-primary/15 text-primary border border-primary/25 shrink-0 uppercase tracking-wider">
+              {language === 'powershell' || language === 'ps1' ? 'ps' : language}
+            </span>
+            {title && (
+              <span className="text-xs font-mono text-gray-300 truncate">{title}</span>
+            )}
+          </div>
         </div>
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-          title="Copiar código"
+          className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all shrink-0"
+          title={copied ? "Copiado!" : "Copiar código"}
+          aria-label="Copiar código"
         >
           {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
-      <div className="p-4 text-sm font-mono overflow-x-auto">
+      <div className="p-4 text-sm font-mono overflow-x-auto bg-[#0b0d14] relative">
         <SyntaxHighlighter
           language={language}
           style={vscDarkPlus}
-          customStyle={{ margin: 0, padding: 0, background: "transparent" }}
+          customStyle={{
+            margin: 0,
+            padding: 0,
+            background: "transparent",
+            fontSize: "0.875rem",
+            lineHeight: "1.6",
+            fontFamily: "var(--font-mono)",
+          }}
+          codeTagProps={{
+            style: { fontFamily: "var(--font-mono)" },
+          }}
           wrapLines={true}
         >
           {code.trim()}
