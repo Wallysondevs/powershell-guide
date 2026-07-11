@@ -1,337 +1,313 @@
-import { PageContainer } from "@/components/layout/PageContainer";
-import { CodeBlock } from "@/components/ui/CodeBlock";
-import { AlertBox } from "@/components/ui/AlertBox";
-import { motion } from "framer-motion";
-import {
-  Terminal,
-  BookOpen,
-  Settings,
-  Code2,
-  ChevronRight,
-  Cpu,
-  Globe,
-  Shield,
-  Layers,
-  Sparkles,
-  ArrowRight,
-  Zap,
-} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 import { Link } from "wouter";
+import {
+  Terminal, BookOpen, ChevronRight, Sparkles, Play, ArrowRight,
+  CheckCircle2, Circle, Rocket, Cpu, Shield, Settings
+} from "lucide-react";
+import { COURSE_MODULES, getCourseProgress, type Module } from "@/lib/course";
 
-const categories = [
-  {
-    title: "Fundamentos",
-    icon: Terminal,
-    description: "História, instalação e primeiros passos no terminal.",
-    links: [
-      { name: "História e Conceitos", href: "/historia" },
-      { name: "Instalação", href: "/instalacao" },
-      { name: "Primeiros Passos", href: "/primeiros-passos" },
-      { name: "Sistema de Ajuda", href: "/ajuda" },
-    ],
-  },
-  {
-    title: "Linguagem",
-    icon: Code2,
-    description: "Variáveis, operadores, tipos de dados e lógica.",
-    links: [
-      { name: "Variáveis e Escopo", href: "/variaveis" },
-      { name: "Operadores", href: "/operadores" },
-      { name: "Manipulação de Strings", href: "/strings" },
-      { name: "Arrays e Coleções", href: "/arrays" },
-      { name: "Hashtables", href: "/hashtables" },
-    ],
-  },
-  {
-    title: "Pipeline e Objetos",
-    icon: Layers,
-    description: "O poder do pipeline e processamento de objetos.",
-    links: [
-      { name: "Entendendo o Pipeline", href: "/pipeline" },
-      { name: "Filtros e Seleção", href: "/filtros" },
-      { name: "Formatação e Saída", href: "/formatacao" },
-    ],
-  },
-  {
-    title: "Sistema de Arquivos",
-    icon: BookOpen,
-    description: "Navegação, gerenciamento de arquivos e permissões.",
-    links: [
-      { name: "Navegação", href: "/navegacao" },
-      { name: "Manipulação de Arquivos", href: "/arquivos" },
-      { name: "Conteúdo de Arquivos", href: "/conteudo-arquivos" },
-      { name: "Permissões ACL", href: "/permissoes" },
-    ],
-  },
-  {
-    title: "Administração",
-    icon: Settings,
-    description: "Processos, serviços, usuários e agendamentos.",
-    links: [
-      { name: "Processos", href: "/processos" },
-      { name: "Serviços", href: "/servicos" },
-      { name: "Usuários e Grupos", href: "/usuarios" },
-      { name: "Tarefas Agendadas", href: "/agendamento" },
-    ],
-  },
-  {
-    title: "Rede e Web",
-    icon: Globe,
-    description: "Diagnóstico de rede e consumo de APIs REST.",
-    links: [
-      { name: "Comandos de Rede", href: "/rede" },
-      { name: "Trabalhando com Web APIs", href: "/web-api" },
-    ],
-  },
-  {
-    title: "Automação Profissional",
-    icon: Shield,
-    description: "Tratamento de erros, módulos e segurança.",
-    links: [
-      { name: "Tratamento de Erros", href: "/erros" },
-      { name: "Módulos", href: "/modulos" },
-      { name: "Scripts e Segurança", href: "/scripts" },
-    ],
-  },
-  {
-    title: "Recursos Avançados",
-    icon: Cpu,
-    description: "Registro, WMI/CIM e gerenciamento de pacotes.",
-    links: [
-      { name: "Registro do Windows", href: "/registro" },
-      { name: "WMI e CIM", href: "/wmi-cim" },
-      { name: "Gerenciamento de Pacotes", href: "/pacotes" },
-    ],
-  },
-];
+// Animação de terminal PowerShell ao vivo
+function LiveTerminal() {
+  const steps = [
+    { cmd: "PS C:\\> Get-Process | Sort-Object CPU -Descending | Select-Object -First 5", out: "Handles  NPM(K)    PM(K)      WS(K)     CPU(s)     Id  SI ProcessName\n-------  ------    -----      -----     ------     --  -- -----------\n   1245      85   125420     132458     245.12   4521   1 chrome\n    892      42    85642      92456     189.45   2134   1 code", delay: 1200 },
+    { cmd: "PS C:\\> Get-Service | Where-Object {$_.Status -eq 'Running'}", out: "Status   Name               DisplayName\n------   ----               -----------\nRunning  XboxGipSvc         Xbox Accessory Management\nRunning  WpnService         Windows Push Notifications...\nRunning  Winmgmt            Windows Management Instrumentation", delay: 1400 },
+    { cmd: "PS C:\\> Invoke-WebRequest -Uri 'https://api.github.com' | ConvertFrom-Json", out: "{current_user_url: https://api.github.com/user, emails_url: https://api.github.com/user/emails...}", delay: 1000 },
+    { cmd: "PS C:\\> Get-ADUser -Filter * | Measure-Object", out: "Count    : 1247\nAverage  :\nSum      :\nMax      :\nMin      :", delay: 1100 },
+    { cmd: "PS C:\\> Start-Job -ScriptBlock { Get-ChildItem C:\\ -Recurse }", out: "Id     Name            PSJobTypeName   State         HasMoreData   Location\n--     ----            -------------   -----         -----------   --------\n1      Job1            BackgroundJob   Running       True          localhost", delay: 900 },
+  ];
 
-const stats = [
-  { label: "Capítulos", value: "66" },
-  { label: "Exemplos prontos", value: "500+" },
-  { label: "Idioma", value: "PT-BR" },
-  { label: "Dependência externa", value: "0" },
-];
+  const [step, setStep] = useState(0);
+  const [showOut, setShowOut] = useState(false);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    if (!isInView) return;
+    if (step >= steps.length) {
+      const timer = setTimeout(() => { setStep(0); setShowOut(false); }, 3000);
+      return () => clearTimeout(timer);
+    }
+    const timer = setTimeout(() => setShowOut(true), steps[step].delay);
+    const nextTimer = setTimeout(() => { setStep((s) => s + 1); setShowOut(false); }, steps[step].delay + 2000);
+    return () => { clearTimeout(timer); clearTimeout(nextTimer); };
+  }, [step, isInView]);
+
+  const currentCmd = steps[Math.min(step, steps.length - 1)];
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6 }}
+      className="rounded-none overflow-hidden border border-[#3A8EE4]/30 shadow-2xl shadow-black/40 text-left"
+    >
+      {/* Title bar */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-[#001D4A] border-b border-[#3A8EE4]/20">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+          <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+          <div className="w-3 h-3 rounded-full bg-[#28c840]" />
+        </div>
+        <span className="ml-2 text-xs font-mono text-gray-400">Windows PowerShell</span>
+      </div>
+      {/* Terminal body */}
+      <div className="bg-[#012456] p-5 font-mono text-sm min-h-[220px] text-white">
+        {steps.slice(0, step).map((s, i) => (
+          <div key={i} className="mb-3">
+            <div className="text-[#FFFF00]">{s.cmd}</div>
+            {s.out && <div className="text-gray-300 whitespace-pre-line mt-1 pl-2">{s.out}</div>}
+          </div>
+        ))}
+        {step < steps.length && (
+          <div>
+            <span className="text-[#FFFF00]">{currentCmd.cmd}</span>
+            <span className="inline-block w-2 h-4 ml-1 bg-white animate-pulse" />
+            {showOut && currentCmd.out && (
+              <div className="text-gray-300 whitespace-pre-line mt-1 pl-2">{currentCmd.out}</div>
+            )}
+          </div>
+        )}
+        {step >= steps.length && (
+          <div className="text-[#3A8EE4]">✓ Demo completa — reiniciando...</div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Card de módulo com progresso
+function ModuleCard({ module, index, completedLessons }: { module: Module; index: number; completedLessons: Set<string> }) {
+  const total = module.lessons.length;
+  const done = module.lessons.filter((l) => completedLessons.has(l.id)).length;
+  const percentage = total > 0 ? (done / total) * 100 : 0;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.03 }}
+      className="group relative p-5 bg-[#001D4A]/40 border border-[#3A8EE4]/20 rounded-lg hover:border-[#3A8EE4]/50 transition-all overflow-hidden"
+    >
+      {/* Progress bar atrás */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#3A8EE4]/10 to-transparent pointer-events-none" style={{ width: `${percentage}%` }} />
+
+      <div className="flex items-start justify-between mb-3 relative z-10">
+        <div className="w-10 h-10 rounded-lg bg-[#3A8EE4]/20 border border-[#3A8EE4]/30 flex items-center justify-center text-[#3A8EE4]">
+          <Terminal className="w-5 h-5" />
+        </div>
+        <span className="text-xs font-mono text-gray-400 tabular-nums">
+          {done}/{total}
+        </span>
+      </div>
+
+      <h3 className="font-bold text-white mb-1 relative z-10">{module.title}</h3>
+      <p className="text-sm text-gray-400 mb-3 relative z-10">{module.description}</p>
+
+      {/* Progress bar */}
+      <div className="h-1.5 bg-[#001D4A] rounded-full overflow-hidden mb-4 relative z-10">
+        <motion.div
+          className="h-full bg-[#3A8EE4]"
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        />
+      </div>
+
+      {/* Aulas */}
+      <ul className="space-y-1 relative z-10">
+        {module.lessons.slice(0, 4).map((lesson) => (
+          <li key={lesson.id}>
+            <Link
+              href={lesson.path}
+              className="flex items-center gap-2 text-sm text-gray-300/70 hover:text-[#3A8EE4] transition-colors py-0.5"
+            >
+              {completedLessons.has(lesson.id) ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#3A8EE4]" />
+              ) : (
+                <Circle className="w-3.5 h-3.5 opacity-30" />
+              )}
+              <span className="truncate">{lesson.title}</span>
+            </Link>
+          </li>
+        ))}
+        {module.lessons.length > 4 && (
+          <li className="text-xs text-gray-500">+{module.lessons.length - 4} mais</li>
+        )}
+      </ul>
+    </motion.div>
+  );
+}
 
 export default function Home() {
-  return (
-    <PageContainer
-      title=""
-      subtitle=""
-    >
-      {/* HERO */}
-      <section className="relative -mt-12 mb-20">
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-card/40 backdrop-blur-sm p-8 sm:p-12 lg:p-16">
-          {/* Background mesh */}
-          <div
-            className="absolute inset-0 -z-10 opacity-90"
-            style={{
-              background: `
-                radial-gradient(ellipse 600px 400px at 20% 30%, hsl(195 100% 50% / 0.20), transparent 60%),
-                radial-gradient(ellipse 500px 350px at 90% 80%, hsl(270 80% 65% / 0.18), transparent 60%),
-                radial-gradient(ellipse 400px 300px at 60% 10%, hsl(195 100% 60% / 0.10), transparent 60%)
-              `,
-            }}
-          />
-          {/* Subtle grid overlay */}
-          <div
-            className="absolute inset-0 -z-10 opacity-[0.04]"
-            style={{
-              backgroundImage:
-                "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
-              maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black, transparent)",
-            }}
-          />
+  const progress = getCourseProgress();
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    const saved = localStorage.getItem("powershell-curso-progresso");
+    if (saved) setCompletedLessons(new Set(JSON.parse(saved)));
+  }, []);
+
+  const STATS = [
+    { value: "74", label: "Capítulos" },
+    { value: "500+", label: "Cmdlets" },
+    { value: "7.4", label: "PowerShell Versão" },
+    { value: "100%", label: "Português BR" },
+  ];
+
+  return (
+    <div className="min-h-screen relative bg-[#001D4A]">
+      {/* HERO animado */}
+      <section className="relative overflow-hidden pt-16 pb-24 px-4">
+        {/* Background */}
+        <div className="absolute inset-0 z-0">
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            className="absolute inset-0 opacity-60"
+            animate={{
+              background: [
+                "radial-gradient(800px 400px at 20% 10%, hsl(215 90% 50% / 0.15), transparent 60%)",
+                "radial-gradient(800px 400px at 80% 20%, hsl(215 90% 40% / 0.12), transparent 60%)",
+                "radial-gradient(800px 400px at 50% 0%, hsl(215 90% 45% / 0.18), transparent 60%)",
+              ],
+            }}
+            transition={{ duration: 8, repeat: Infinity, repeatType: "reverse" }}
+            style={{ background: "radial-gradient(800px 400px at 20% 10%, hsl(215 90% 50% / 0.18), transparent 60%)" }}
+          />
+        </div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="text-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-mono font-semibold text-primary uppercase tracking-wider">
-                Guia Definitivo · PT-BR
-              </span>
-            </div>
+            {/* Badge */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3A8EE4]/15 border border-[#3A8EE4]/30 mb-7"
+            >
+              <Sparkles className="w-4 h-4 text-[#3A8EE4]" />
+              <span className="font-medium text-[#3A8EE4] text-sm">Curso completo · 74 capítulos · 2026</span>
+            </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05] mb-6 mt-0 pb-0 border-0">
-              Domine o{" "}
-              <span className="bg-gradient-to-r from-primary via-cyan-300 to-secondary bg-clip-text text-transparent text-glow-primary">
-                PowerShell
-              </span>
-              <br />
-              do básico ao{" "}
-              <span className="font-mono text-primary cursor-blink">avançado</span>
+            {/* Título */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6">
+              <span className="text-white">Domine o</span>{" "}
+              <span className="text-[#3A8EE4]">PowerShell</span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl mb-8">
-              66 capítulos com exemplos prontos para colar no terminal.
-              Aprenda automação de sistemas com o shell mais poderoso do mercado —
-              do <code>Get-Process</code> ao Active Directory, Azure e CI/CD.
+            <p className="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+              Do <code className="text-[#3A8EE4] bg-black/30 px-2 py-0.5 rounded">Get-Command</code> ao Active Directory, Azure, DSC e automação avançada — <strong>em português</strong>.
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-10">
-              <Link href="/historia">
-                <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5">
-                  Começar a ler
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+            {/* Progresso geral */}
+            {progress.completed > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mb-8 max-w-md mx-auto"
+              >
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <span className="text-gray-400">Seu progresso</span>
+                  <span className="font-mono font-bold text-[#3A8EE4]">{progress.percentage}%</span>
+                </div>
+                <div className="h-2 bg-[#001D4A] rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-[#3A8EE4]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress.percentage}%` }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+              <Link
+                href="/instalacao"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg bg-[#3A8EE4] text-white font-bold no-underline hover:bg-[#2D7BD6] hover:scale-[1.02] transition-all shadow-lg shadow-[#3A8EE4]/25"
+              >
+                {progress.completed > 0 ? (
+                  <>
+                    <Play className="w-4 h-4" /> Continuar curso
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="w-4 h-4" /> Começar agora
+                  </>
+                )}
               </Link>
-              <Link href="/ref-rapida">
-                <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold border border-border bg-card/50 hover:bg-card hover:border-primary/40 transition-all">
-                  <Zap className="w-4 h-4 text-primary" />
-                  Referência rápida
-                </button>
+              <Link
+                href="/historia"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#001D4A]/80 border border-[#3A8EE4]/30 text-white font-semibold no-underline hover:bg-[#001D4A] transition-colors"
+              >
+                <BookOpen className="w-4 h-4" /> O que é PowerShell?
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-border/40">
-              {stats.map((s) => (
-                <div key={s.label}>
-                  <div className="text-2xl sm:text-3xl font-bold font-mono text-foreground tracking-tight">
-                    {s.value}
-                  </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1 font-medium">
-                    {s.label}
-                  </div>
+            {/* Terminal ao vivo */}
+            <LiveTerminal />
+          </motion.div>
+
+          {/* Stats */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-14"
+          >
+            {STATS.map((s, i) => (
+              <div key={i} className="p-4 rounded-lg bg-[#001D4A]/60 border border-[#3A8EE4]/20 text-center">
+                <div className="text-3xl font-extrabold text-[#3A8EE4]">{s.value}</div>
+                <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-mono">
+                  {s.label}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* WHY POWERSHELL + HOW TO USE */}
-      <section className="mb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-          <div className="card-premium p-7">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
-                <Terminal className="w-5 h-5 text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mt-0 mb-0 pb-0 border-0">Por que PowerShell?</h3>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Diferente de shells tradicionais baseados em texto (Bash, CMD), o PowerShell é baseado em{" "}
-              <strong className="text-foreground">objetos</strong>. Ao invés de manipular strings, você lida com
-              estruturas ricas, tornando a automação mais robusta.
-            </p>
-            <ul className="space-y-1.5 text-sm">
-              <li>Integração profunda com .NET</li>
-              <li>Multiplataforma (Windows, Linux, macOS)</li>
-              <li>Convenção Verbo-Substantivo previsível</li>
-            </ul>
-          </div>
-
-          <div className="card-premium p-7">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-secondary/15 border border-secondary/25 flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-secondary" />
-              </div>
-              <h3 className="text-xl font-bold mt-0 mb-0 pb-0 border-0">Como usar este guia?</h3>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Estruturado tanto como curso sequencial quanto referência rápida. Cada página traz exemplos
-              prontos para colar no terminal — comece pelo básico ou pule direto para o tópico que precisa.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Iniciante</span>
-              <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Intermediário</span>
-              <span className="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/25 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider">Avançado</span>
-            </div>
-          </div>
+      {/* Trilha de módulos */}
+      <div className="max-w-5xl mx-auto px-4 py-20">
+        <div className="text-center mb-14">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            Trilha de aprendizado
+          </h2>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Progresso salvo automaticamente. Marque cada capítulo como concluído e avance no seu ritmo.
+          </p>
         </div>
 
-        <AlertBox type="tip" title="Dica de Ouro">
-          O PowerShell não é apenas um shell — é um motor de automação. Se você faz algo manualmente mais de duas vezes,
-          existe um cmdlet que faz isso por você.
-        </AlertBox>
-      </section>
-
-      {/* CATEGORIES */}
-      <section className="mb-20">
-        <div className="flex items-end justify-between mb-8 flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mt-0 mb-2 pb-0 border-0 tracking-tight">
-              Navegue pelas categorias
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {categories.length} áreas temáticas · explore livremente
-            </p>
-          </div>
-          <span className="prompt-tag">
-            <span className="opacity-70">PS&gt;</span> ls ./capitulos
-          </span>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {COURSE_MODULES.map((module, i) => (
+            <ModuleCard key={module.id} module={module} index={i} completedLessons={completedLessons} />
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {categories.map((cat, i) => {
-            const Icon = cat.icon;
-            return (
-              <motion.div
-                key={cat.title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.35 }}
-                viewport={{ once: true, margin: "-50px" }}
-                className="card-premium p-6 group"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center group-hover:scale-110 group-hover:border-primary/50 transition-all shrink-0">
-                    <Icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold mt-0 mb-1 pb-0 border-0 tracking-tight">{cat.title}</h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{cat.description}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 pt-4 border-t border-border/40">
-                  {cat.links.map((link) => (
-                    <Link
-                      key={link.href}
-                      to={link.href}
-                      className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 group/link no-underline py-0.5"
-                    >
-                      <ChevronRight className="w-3 h-3 text-primary/50 group-hover/link:text-primary group-hover/link:translate-x-0.5 transition-all" />
-                      <span className="truncate">{link.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* TRY NOW */}
-      <section className="mb-16">
-        <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mt-0 mb-2 pb-0 border-0 tracking-tight">
-              Experimente agora
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Abra seu terminal, cole e veja o resultado.
-            </p>
-          </div>
-        </div>
-        <CodeBlock
-          title="primeiros-comandos.ps1"
-          code={`# Mostra informações detalhadas sobre a versão do PowerShell
-$PSVersionTable
-
-# Top 5 processos que mais consomem memória
-Get-Process |
-  Sort-Object WorkingSet64 -Descending |
-  Select-Object -First 5 Name, Id, @{N='RAM (MB)'; E={[math]::Round($_.WorkingSet64/1MB, 2)}}
-
-# E o melhor: tudo isso são objetos .NET, não texto
-(Get-Process)[0] | Get-Member | Select-Object -First 10
-`}
-        />
-      </section>
-    </PageContainer>
+        {/* CTA final */}
+        <section className="mt-20 relative rounded-2xl overflow-hidden border border-[#3A8EE4]/30 p-10 text-center bg-gradient-to-br from-[#3A8EE4]/10 via-[#001D4A] to-[#001D4A]">
+          <Sparkles className="w-8 h-8 text-[#3A8EE4] mx-auto mb-4" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+            Pronto para começar?
+          </h2>
+          <p className="text-gray-400 mb-6 max-w-xl mx-auto">
+            A jornada do <code>Get-Command</code> ao monorepo de automação começa agora.
+          </p>
+          <Link
+            href="/instalacao"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#3A8EE4] text-white font-bold no-underline hover:bg-[#2D7BD6] hover:scale-[1.02] transition-all shadow-lg shadow-[#3A8EE4]/25"
+          >
+            Início Rápido
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </section>
+      </div>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { LessonNav } from "@/components/ui/LessonNav";
 
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
@@ -105,14 +106,15 @@ function Layout({ children }: { children: React.ReactNode }) {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-screen bg-[#001D4A] text-white flex">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       <div className="flex-1 lg:pl-72 flex flex-col min-w-0 transition-all duration-300">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
-        <main className="flex-1">
+        <main className="flex-1 pb-16">
           {children}
         </main>
       </div>
+      <LessonNav />
     </div>
   );
 }
