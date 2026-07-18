@@ -101,7 +101,7 @@ $t2 = (Measure-Command {
     }
 }).TotalMilliseconds
 
-"Pipeline: ${t1}ms | Foreach: ${t2}ms"
+"Pipeline: \${t1}ms | Foreach: \${t2}ms"
 `} />
 
       <h2>Transcript e Logs de Sessão</h2>

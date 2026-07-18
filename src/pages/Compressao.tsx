@@ -112,7 +112,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
       }
 
       $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-      $arquivo   = Join-Path $DestinoPasta "${Prefixo}_${timestamp}.zip"
+      $arquivo   = Join-Path $DestinoPasta "\${Prefixo}_\${timestamp}.zip"
 
       try {
           Compress-Archive -Path $Origem -DestinationPath $arquivo -CompressionLevel Optimal
@@ -126,7 +126,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
       }
 
       # Rotação: remover backups antigos mantendo apenas os N mais recentes
-      $todos = Get-ChildItem $DestinoPasta -Filter "${Prefixo}_*.zip" |
+      $todos = Get-ChildItem $DestinoPasta -Filter "\${Prefixo}_*.zip" |
           Sort-Object LastWriteTime -Descending
 
       if ($todos.Count -gt $ManterUltimos) {

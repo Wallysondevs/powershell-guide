@@ -147,7 +147,7 @@ try {
     while ($true) {
         $cpu  = (Get-CimInstance Win32_Processor).LoadPercentage
         $ram  = [math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB, 2)
-        Write-Host "$(Get-Date -Format 'HH:mm:ss') | CPU: $cpu% | RAM Livre: ${ram}GB"
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') | CPU: $cpu% | RAM Livre: \${ram}GB"
         Start-Sleep -Seconds 60
     }
 } finally {

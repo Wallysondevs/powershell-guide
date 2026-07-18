@@ -65,7 +65,7 @@ $t3 = (Measure-Command {
     $r   = $arr | Where-Object { $_ * 2 -gt 50000 }
 }).TotalMilliseconds
 
-"Pipeline: ${t1}ms | Foreach: ${t2}ms | Array: ${t3}ms"
+"Pipeline: \${t1}ms | Foreach: \${t2}ms | Array: \${t3}ms"
 `} />
 
       <h2>Filtrar na Fonte, não no Final</h2>

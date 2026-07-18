@@ -77,7 +77,7 @@ $servidor  = "SQLSERVER01"
 $database  = "MinhaDB"
 $pasta     = "D:\\Backups\\SQL"
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$arquivo   = "$pasta\\${database}_$timestamp.bak"
+$arquivo   = "$pasta\\\${database}_$timestamp.bak"
 
 Invoke-Sqlcmd -ServerInstance $servidor -Query @"
 BACKUP DATABASE [$database]
@@ -95,7 +95,7 @@ $bancos = Invoke-Sqlcmd -ServerInstance $servidor  -Query "SELECT name FROM sys.
 
 foreach ($db in $bancos) {
     $nome   = $db.name
-    $arq    = "$pasta\\${nome}_$(Get-Date -Format 'yyyyMMdd').bak"
+    $arq    = "$pasta\\\${nome}_$(Get-Date -Format 'yyyyMMdd').bak"
     Invoke-Sqlcmd -ServerInstance $servidor -Query "BACKUP DATABASE [$nome] TO DISK = N'$arq' WITH COMPRESSION"
     Write-Host "Backup: $nome -> $arq"
 }

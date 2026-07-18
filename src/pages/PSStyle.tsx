@@ -64,7 +64,7 @@ $PSStyle.Reset            # Volta ao normal — SEMPRE use no fim`} />
 
 # Hex curto
 $verde = $PSStyle.Foreground.FromRgb(0x00, 0xff, 0x88)
-"${verde}Verde neon$($PSStyle.Reset)"`} />
+"\${verde}Verde neon$($PSStyle.Reset)"`} />
 
       <h2>Modos de renderização — controle global</h2>
       <CodeBlock title="OutputRendering — quando aplicar ANSI" code={`# Comportamento padrão
@@ -169,7 +169,7 @@ Get-ChildItem`} />
         'Debug'   { 'DBG ' }
     }
     $hora = Get-Date -Format 'HH:mm:ss'
-    "$($PSStyle.Foreground.BrightBlack)[$hora]$($PSStyle.Reset) ${cor}[$marca] $Message$($PSStyle.Reset)"
+    "$($PSStyle.Foreground.BrightBlack)[$hora]$($PSStyle.Reset) \${cor}[$marca] $Message$($PSStyle.Reset)"
 }
 
 Write-Log 'Iniciando deploy' -Level Info
@@ -188,7 +188,7 @@ Write-Log 'Falhou em X'      -Level Error`} />
             'Alterado'   { $PSStyle.Foreground.Yellow      + '~ ' }
             default      { '  ' }
         }
-        "${estilo}$($_.Nome)$($PSStyle.Reset)"
+        "\${estilo}$($_.Nome)$($PSStyle.Reset)"
     }
 }
 
@@ -216,7 +216,7 @@ Format-Hyperlink -Url 'https://learn.microsoft.com/powershell' -Texto 'Docs Powe
     if ($PSStyle) {
         # PS 7.2+ — usa ANSI
         $estilo = $PSStyle.Foreground.PSObject.Properties[$Cor].Value
-        "${estilo}$Texto$($PSStyle.Reset)"
+        "\${estilo}$Texto$($PSStyle.Reset)"
     } else {
         # PS 5.1 — fallback
         Write-Host $Texto -ForegroundColor $Cor
@@ -236,18 +236,18 @@ Write-Colored 'Funciona em qualquer versão' -Cor Yellow`} />
 
       <h2>Cheat — códigos ANSI puros (sem PSStyle)</h2>
       <CodeBlock title="Funciona em qualquer terminal compatível" code={`$ESC = [char]27
-"${ESC}[31mVermelho${ESC}[0m"          # Cor texto
-"${ESC}[42mFundo verde${ESC}[0m"       # Cor fundo
-"${ESC}[1mNegrito${ESC}[0m"
-"${ESC}[4mSublinhado${ESC}[0m"
+"\${ESC}[31mVermelho\${ESC}[0m"          # Cor texto
+"\${ESC}[42mFundo verde\${ESC}[0m"       # Cor fundo
+"\${ESC}[1mNegrito\${ESC}[0m"
+"\${ESC}[4mSublinhado\${ESC}[0m"
 
 # RGB foreground
-"${ESC}[38;2;255;105;180mRosa${ESC}[0m"
+"\${ESC}[38;2;255;105;180mRosa\${ESC}[0m"
 # RGB background
-"${ESC}[48;2;0;0;0mFundo preto${ESC}[0m"
+"\${ESC}[48;2;0;0;0mFundo preto\${ESC}[0m"
 
 # Reset total
-"${ESC}[0m"`} />
+"\${ESC}[0m"`} />
 
       <AlertBox type="success" title="Resumão">
         <p>

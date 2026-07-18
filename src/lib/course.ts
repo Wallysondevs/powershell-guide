@@ -1,5 +1,6 @@
 /**
  * Curso de PowerShell — estrutura de módulos e progresso.
+ * Paths devem bater com as rotas em App.tsx.
  */
 
 export interface Lesson {
@@ -101,9 +102,12 @@ export const COURSE_MODULES: Module[] = [
     lessons: [
       { id: "processos", path: "/processos", title: "Processos" },
       { id: "servicos", path: "/servicos", title: "Serviços" },
+      { id: "usuarios", path: "/usuarios", title: "Usuários Locais" },
       { id: "registro", path: "/registro", title: "Registro do Windows" },
-      { id: "eventos", path: "/eventos", title: "Event Logs" },
-      { id: "desempenho", path: "/desempenho", title: "Desempenho" },
+      { id: "evento-log", path: "/evento-log", title: "Event Logs" },
+      { id: "wmi-cim", path: "/wmi-cim", title: "WMI / CIM" },
+      { id: "performance", path: "/performance", title: "Desempenho" },
+      { id: "agendamento", path: "/agendamento", title: "Agendamento de Tarefas" },
     ],
   },
   {
@@ -113,8 +117,21 @@ export const COURSE_MODULES: Module[] = [
     icon: "Network",
     lessons: [
       { id: "rede", path: "/rede", title: "Rede e Netsh" },
-      { id: "web", path: "/web", title: "Web Requests (Invoke-WebRequest)" },
-      { id: "rest", path: "/rest", title: "REST APIs (Invoke-RestMethod)" },
+      { id: "network-avancado", path: "/network-avancado", title: "Rede Avançada" },
+      { id: "web-api", path: "/web-api", title: "Web Requests e REST APIs" },
+      { id: "email", path: "/email", title: "Email" },
+    ],
+  },
+  {
+    id: "fluxo",
+    title: "Fluxo de Controle",
+    description: "Condicionais, loops e tratamento de erros",
+    icon: "GitBranch",
+    lessons: [
+      { id: "fluxo-controle", path: "/fluxo-controle", title: "Condicionais (if, switch)" },
+      { id: "loops", path: "/loops", title: "Loops (for, foreach, while)" },
+      { id: "erros", path: "/erros", title: "Tratamento de Erros" },
+      { id: "debug", path: "/debug", title: "Debug e Breakpoints" },
     ],
   },
   {
@@ -126,128 +143,77 @@ export const COURSE_MODULES: Module[] = [
       { id: "funcoes", path: "/funcoes", title: "Funções Avançadas" },
       { id: "scripts", path: "/scripts", title: "Scripts .ps1" },
       { id: "modulos", path: "/modulos", title: "Módulos PowerShell" },
-      { id: "escopo", path: "/escopo", title: "Escopo de Variáveis" },
+      { id: "classes", path: "/classes", title: "Classes PowerShell" },
+      { id: "perfil", path: "/perfil", title: "Perfil do PowerShell" },
     ],
   },
   {
-    id: "fluxo",
-    title: "Fluxo de Controle",
-    description: "Condicionais, loops e tratamento de erros",
-    icon: "GitBranch",
-    lessons: [
-      { id: "condicionais", path: "/condicionais", title: "Condicionais (if, switch)" },
-      { id: "loops", path: "/loops", title: "Loops (for, foreach, while)" },
-      { id: "erros", path: "/erros", title: "Tratamento de Erros" },
-      { id: "debug", path: "/debug", title: "Debug e Breakpoints" },
-    ],
-  },
-  {
-    id: "seguranca",
-    title: "Segurança",
-    description: "Execution policy, assinatura e credenciais",
-    icon: "Shield",
-    lessons: [
-      { id: "execucao", path: "/execucao", title: "Execution Policy" },
-      { id: "assinatura", path: "/assinatura", title: "Assinatura de Scripts" },
-      { id: "credenciais", path: "/credenciais", title: "Credenciais Seguras" },
-      { id: "criptografia", path: "/criptografia", title: "Criptografia" },
-    ],
-  },
-  {
-    id: "remoting",
-    title: "PowerShell Remoting",
-    description: "Invoke-Command, sessões e JEA",
-    icon: "Globe",
-    lessons: [
-      { id: "remoting", path: "/remoting", title: "Remoting Básico" },
-      { id: "sessoes", path: "/sessoes", title: "Sessões Remotas" },
-      { id: "jea", path: "/jea", title: "JEA (Just Enough Admin)" },
-    ],
-  },
-  {
-    id: "active-directory",
-    title: "Active Directory",
-    description: "Usuários, grupos e OU",
-    icon: "Users",
-    lessons: [
-      { id: "active-directory", path: "/active-directory", title: "Módulo AD" },
-      { id: "usuarios-ad", path: "/usuarios-ad", title: "Usuários e Grupos" },
-    ],
-  },
-  {
-    id: "azure",
-    title: "Azure e Cloud",
-    description: "Az module e Azure AD",
-    icon: "Cloud",
-    lessons: [
-      { id: "azure", path: "/azure", title: "Azure PowerShell" },
-    ],
-  },
-  {
-    id: "exchange-sql",
-    title: "Exchange & SQL Server",
-    description: "Administração via PowerShell",
-    icon: "Database",
-    lessons: [
-      { id: "exchange", path: "/exchange", title: "Exchange Online" },
-      { id: "sql", path: "/sql", title: "SQL Server" },
-    ],
-  },
-  {
-    id: "csv-json-xml",
+    id: "dados",
     title: "Formatos de Dados",
-    description: "CSV, JSON, XML e YAML",
+    description: "CSV, JSON e XML",
     icon: "FileText",
     lessons: [
       { id: "csv", path: "/csv", title: "CSV" },
       { id: "json", path: "/json", title: "JSON" },
       { id: "xml", path: "/xml", title: "XML" },
-      { id: "yaml", path: "/yaml", title: "YAML" },
     ],
   },
   {
-    id: "agendamento",
-    title: "Agendamento",
-    description: "Scheduled Tasks e cron",
-    icon: "Clock",
+    id: "seguranca",
+    title: "Segurança",
+    description: "Execution policy, credenciais e criptografia",
+    icon: "Shield",
     lessons: [
-      { id: "agendamento", path: "/agendamento", title: "Scheduled Tasks" },
+      { id: "seguranca", path: "/seguranca", title: "Segurança e Execution Policy" },
+      { id: "criptografia", path: "/criptografia", title: "Criptografia" },
+      { id: "bitlocker", path: "/bitlocker", title: "BitLocker" },
     ],
   },
   {
-    id: "dsc",
-    title: "DSC e Configuração",
-    description: "Desired State Configuration",
-    icon: "Wrench",
+    id: "remoting",
+    title: "Remoting e Jobs",
+    description: "Invoke-Command, sessões e paralelismo",
+    icon: "Globe",
     lessons: [
-      { id: "dsc", path: "/dsc", title: "DSC Básico" },
+      { id: "remoting", path: "/remoting", title: "PowerShell Remoting" },
+      { id: "jobs", path: "/jobs", title: "Jobs em Background" },
+      { id: "threadjob", path: "/threadjob", title: "ThreadJob" },
     ],
   },
   {
-    id: "classes",
-    title: "Classes e OO",
-    description: "POO no PowerShell",
-    icon: "Box",
+    id: "modulos-pacotes",
+    title: "Módulos e Pacotes",
+    description: "PSGallery e gerenciamento de pacotes",
+    icon: "Package",
     lessons: [
-      { id: "classes", path: "/classes", title: "Classes PowerShell" },
+      { id: "ps-gallery", path: "/ps-gallery", title: "PowerShell Gallery" },
+      { id: "pacotes", path: "/pacotes", title: "Pacotes e PackageManagement" },
     ],
   },
   {
-    id: "email",
-    title: "Email e Comunicação",
-    description: "Send-MailMessage",
-    icon: "Mail",
+    id: "infra",
+    title: "Infraestrutura",
+    description: "AD, GPO, Hyper-V e SQL",
+    icon: "Server",
     lessons: [
-      { id: "email", path: "/email", title: "Email" },
+      { id: "active-directory", path: "/active-directory", title: "Active Directory" },
+      { id: "gpo", path: "/gpo", title: "GPO" },
+      { id: "hyper-v", path: "/hyper-v", title: "Hyper-V" },
+      { id: "sql", path: "/sql", title: "SQL Server" },
+      { id: "azure", path: "/azure", title: "Azure PowerShell" },
+      { id: "dsc", path: "/dsc", title: "DSC" },
     ],
   },
   {
-    id: "cicd",
-    title: "CI/CD e Automação",
-    description: "Pipelines e workflows",
+    id: "qualidade",
+    title: "Qualidade e Automação",
+    description: "Testes, CI/CD e PS7",
     icon: "Workflow",
     lessons: [
+      { id: "pester", path: "/pester", title: "Pester (Testes)" },
       { id: "cicd", path: "/cicd", title: "CI/CD com PowerShell" },
+      { id: "ps7", path: "/ps7", title: "PowerShell 7+" },
+      { id: "wpf", path: "/wpf", title: "WPF e GUIs" },
     ],
   },
   {
@@ -256,14 +222,14 @@ export const COURSE_MODULES: Module[] = [
     description: "Dicas e referências",
     icon: "Star",
     lessons: [
-      { id: "bitlocker", path: "/bitlocker", title: "BitLocker" },
       { id: "dicas", path: "/dicas", title: "Dicas e Truques" },
+      { id: "ref-rapida", path: "/ref-rapida", title: "Referência Rápida" },
       { id: "referencias", path: "/referencias", title: "Referências" },
     ],
   },
 ];
 
-const STORAGE_KEY = "powershell…esso";
+const STORAGE_KEY = "powershell-guide-progress";
 
 export function getProgress(): Set<string> {
   try {
